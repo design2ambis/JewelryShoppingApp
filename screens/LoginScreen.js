@@ -14,9 +14,6 @@ export default function LoginScreen({ navigation }) {
     try {
       const response = await fetch("https://nivsjewels.com/api/signin", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ email, password }),
       });
 
@@ -28,7 +25,11 @@ export default function LoginScreen({ navigation }) {
       // Show success message
       if (data.status === true) {
         // Store user data in AsyncStorage
-        await AsyncStorage.setItem("userData", JSON.stringify(data));
+        await AsyncStorage.setItem("userid", data.userid);
+        await AsyncStorage.setItem("username", data.username);
+        await AsyncStorage.setItem("useremail", data.useremail);
+        await AsyncStorage.setItem("userphone", data.userphone);
+        await AsyncStorage.setItem("usertoken", data.usertoken);
 
         showMessage({
           message: "Success",
