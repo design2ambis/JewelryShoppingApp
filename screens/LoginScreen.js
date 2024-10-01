@@ -3,6 +3,7 @@ import { View, StyleSheet, Image } from "react-native";
 import { TextInput, Button, Text, Title } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient"; // Import LinearGradient
 import FlashMessage, { showMessage } from "react-native-flash-message";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -12,7 +13,6 @@ export default function LoginScreen({ navigation }) {
   const handleLogin = async () => {
     try {
       const response = await fetch("https://nivsjewels.com/api/signin", {
-        // Replace with your actual API endpoint
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,8 +27,11 @@ export default function LoginScreen({ navigation }) {
       const data = await response.json();
       // Show success message
       if (data.status === true) {
+        // Store user data in AsyncStorage
+        await AsyncStorage.setItem("userData", JSON.stringify(data));
+
         showMessage({
-          message: `Success`,
+          message: "Success",
           description: `Welcome Back ${data.name}`,
           type: "success",
           backgroundColor: "#4caf50", // Success color
@@ -42,7 +45,7 @@ export default function LoginScreen({ navigation }) {
           message: data.msg,
           description: data.text,
           type: "danger",
-          backgroundColor: "#FF0505", // Success color
+          backgroundColor: "#FF0505", // Error color
           color: "#fff", // Text color
         });
       }
@@ -89,12 +92,15 @@ export default function LoginScreen({ navigation }) {
         >
           Login
         </Button>
-        <Text
-          style={styles.registerText}
-          onPress={() => navigation.navigate("Register")}
-        >
+        <Text style={styles.registerText}>
           Don't have an account?
-          <Text style={styles.registerhere}> Register here</Text>
+          <Text
+            style={styles.registerhere}
+            onPress={() => navigation.navigate("Register")}
+          >
+            {" "}
+            Register here
+          </Text>
         </Text>
       </View>
       <FlashMessage position="top" />
@@ -138,7 +144,7 @@ const styles = StyleSheet.create({
   registerText: {
     textAlign: "center",
     marginTop: 20,
-    color: "#000", // Gold or brown color for elegance
+    color: "#000", // Color for the text
   },
   buttonLabel: {
     color: "#fff", // Text color for the button

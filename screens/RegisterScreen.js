@@ -47,11 +47,15 @@ export default function RegisterScreen({ navigation }) {
         >
           Register
         </Button>
-        <Text
-          style={styles.Logintext}
-          onPress={() => navigation.navigate("Login")}
-        >
-          Already have an account? Login here
+        <Text style={styles.Logintextblack}>
+          Already have an account?
+          <Text
+            onPress={() => navigation.navigate("Login")}
+            style={styles.Logintext}
+          >
+            {" "}
+            Login here
+          </Text>
         </Text>
       </View>
     </LinearGradient>
@@ -91,12 +95,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: "auto",
   },
-  Logintext: {
+  Logintextblack: {
     textAlign: "center",
     marginTop: 20,
-    color: "#885b17", // Gold or brown color for elegance
+    color: "#000", // Gold or brown color for elegance
   },
   buttonLabel: {
     color: "#fff", // Text color for the button
+  },
+  Logintext: {
+    color: "#9b6f25", // Gold or brown color for elegance
   },
 });
