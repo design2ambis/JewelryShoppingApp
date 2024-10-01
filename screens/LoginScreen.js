@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Image, Alert } from "react-native";
+import { View, StyleSheet, Image } from "react-native";
 import { TextInput, Button, Text, Title } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient"; // Import LinearGradient
+import FlashMessage, { showMessage } from "react-native-flash-message";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -10,9 +11,12 @@ export default function LoginScreen({ navigation }) {
   // Function to handle login
   const handleLogin = async () => {
     try {
-      const response = await fetch("https://myendpoint.com/api/signin", {
+      const response = await fetch("https://nivsjewels.com/api/signin", {
         // Replace with your actual API endpoint
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email, password }),
       });
 
@@ -21,11 +25,36 @@ export default function LoginScreen({ navigation }) {
       }
 
       const data = await response.json();
-      // Assuming the API returns a token or user info on success
-      Alert.alert(data.msg, data.text);
-      navigation.navigate("Home");
+      // Show success message
+      if (data.status === true) {
+        showMessage({
+          message: `Success`,
+          description: `Welcome Back ${data.name}`,
+          type: "success",
+          backgroundColor: "#4caf50", // Success color
+          color: "#fff", // Text color
+        });
+        setTimeout(() => {
+          navigation.navigate("Home");
+        }, 2000);
+      } else {
+        showMessage({
+          message: data.msg,
+          description: data.text,
+          type: "danger",
+          backgroundColor: "#FF0505", // Success color
+          color: "#fff", // Text color
+        });
+      }
     } catch (error) {
-      Alert.alert(data.msg, data.text);
+      // Show error message
+      showMessage({
+        message: "Error",
+        description: error.message,
+        type: "danger",
+        backgroundColor: "#f44336", // Error color
+        color: "#fff", // Text color
+      });
     }
   };
 
@@ -64,9 +93,11 @@ export default function LoginScreen({ navigation }) {
           style={styles.registerText}
           onPress={() => navigation.navigate("Register")}
         >
-          Don't have an account? Register here
+          Don't have an account?
+          <Text style={styles.registerhere}> Register here</Text>
         </Text>
       </View>
+      <FlashMessage position="top" />
     </LinearGradient>
   );
 }
@@ -107,9 +138,12 @@ const styles = StyleSheet.create({
   registerText: {
     textAlign: "center",
     marginTop: 20,
-    color: "#885b17", // Gold or brown color for elegance
+    color: "#000", // Gold or brown color for elegance
   },
   buttonLabel: {
     color: "#fff", // Text color for the button
+  },
+  registerhere: {
+    color: "#9b6f25",
   },
 });
