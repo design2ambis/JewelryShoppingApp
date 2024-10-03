@@ -5,7 +5,7 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  Button,
+  TouchableOpacity,
   Alert,
   ActivityIndicator,
   Image,
@@ -21,7 +21,7 @@ export default function ProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [usertoken, setUsertoken] = useState(null);
-  const [editable, setEditable] = useState(false); // Toggle editable state
+  const [editable, setEditable] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -53,33 +53,29 @@ export default function ProfileScreen({ navigation }) {
     fetchUserData();
   }, []);
 
-  // Handle user data update
   const updateUserData = async () => {
     try {
-      // Here you would normally make an API call to update user data.
-      // For demonstration, we will just save it locally
       await AsyncStorage.setItem("useremail", userData.email);
       await AsyncStorage.setItem("userphone", userData.phone);
 
       showMessage({
         message: "Profile updated successfully!",
         type: "success",
-        backgroundColor: "#4caf50",
+        backgroundColor: "#007BFF",
         color: "#fff",
       });
-      setEditable(false); // Disable editing after saving
+      setEditable(false);
     } catch (err) {
       showMessage({
         message: "Error updating profile",
         description: err.message,
         type: "danger",
-        backgroundColor: "#f44336",
+        backgroundColor: "#dc3545",
         color: "#fff",
       });
     }
   };
 
-  // Handle logout
   const handleLogout = () => {
     Alert.alert(
       "Confirm Logout",
@@ -94,10 +90,10 @@ export default function ProfileScreen({ navigation }) {
               showMessage({
                 message: "Logged out successfully.",
                 type: "success",
-                backgroundColor: "#4caf50",
+                backgroundColor: "#007BFF",
                 color: "#fff",
               });
-              navigation.replace("Login"); // Navigate to your Login screen
+              navigation.replace("Login");
             } catch (error) {
               console.error("Failed to clear AsyncStorage:", error);
             }
@@ -111,7 +107,7 @@ export default function ProfileScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#9b6f25" />
+        <ActivityIndicator size="large" color="#007BFF" />
       </View>
     );
   }
@@ -122,15 +118,16 @@ export default function ProfileScreen({ navigation }) {
         <Image
           source={{
             uri: "https://cdn-icons-png.flaticon.com/512/5087/5087579.png",
-          }} // Replace with your image URL
+          }}
           style={styles.noTokenImage}
         />
         <Text style={styles.noTokenText}>You are not logged in</Text>
-        <Button
-          title="Go to Login"
-          onPress={() => navigation.navigate("Login")} // Replace with your login screen route
-          color="#17A6A8"
-        />
+        <TouchableOpacity
+          style={styles.loginButton}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <Text style={styles.loginButtonText}>Go to Login</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -169,33 +166,83 @@ export default function ProfileScreen({ navigation }) {
         }
         placeholder="Phone"
       />
-      <Button
-        title={editable ? "Save Changes" : "Edit Profile"}
+      <TouchableOpacity
+        style={styles.button}
         onPress={editable ? updateUserData : () => setEditable(true)}
-      />
-      <Button title="Logout" onPress={handleLogout} color="#ff6347" />
+      >
+        <Text style={styles.buttonText}>
+          {editable ? "Save Changes" : "Edit Profile"}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>Logout</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f8f8f8" },
+  container: { flex: 1, padding: 20, backgroundColor: "#f0f2f5" },
   noTokenContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
-  noTokenImage: { width: 200, height: 200, marginBottom: 20 },
-  noTokenText: { fontSize: 18, fontWeight: "bold", marginBottom: 20 },
-  errorText: { color: "red", fontSize: 16, textAlign: "center" },
-  title: { fontSize: 28, fontWeight: "bold", marginBottom: 20 },
+  noTokenImage: { width: 150, height: 150, marginBottom: 20 },
+  noTokenText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "#333",
+  },
+  errorText: { color: "#dc3545", fontSize: 16, textAlign: "center" },
+  title: { fontSize: 28, fontWeight: "bold", marginBottom: 20, color: "#333" },
   input: {
     height: 50,
     borderColor: "#ccc",
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 8,
     paddingLeft: 10,
     marginBottom: 20,
+    backgroundColor: "#ffffff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 1, // for Android
+  },
+  button: {
+    backgroundColor: "#007BFF",
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 10,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  logoutButton: {
+    backgroundColor: "#dc3545",
+    borderRadius: 8,
+    padding: 15,
+    alignItems: "center",
+  },
+  logoutButtonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  loginButton: {
+    backgroundColor: "#007BFF",
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  loginButtonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
   },
 });

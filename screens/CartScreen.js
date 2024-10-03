@@ -9,9 +9,10 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
-  Alert, // Import Alert
+  Alert,
 } from "react-native";
 import { Button } from "react-native-paper";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function CartScreen({ navigation }) {
   const [cartItems, setCartItems] = useState([]);
@@ -71,7 +72,7 @@ export default function CartScreen({ navigation }) {
   const increaseQty = (caId) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item.caId === caId ? { ...item, qty: item.qty + 1 } : item
+        item.caId === caId ? { ...item, qty: item.caQty + 1 } : item
       )
     );
   };
@@ -100,13 +101,13 @@ export default function CartScreen({ navigation }) {
         <Image
           source={{
             uri: "https://cdn-icons-png.flaticon.com/512/5087/5087579.png",
-          }} // Replace with your image URL
+          }}
           style={styles.noTokenImage}
         />
         <Text style={styles.noTokenText}>You are not logged in</Text>
         <Button
           mode="contained"
-          onPress={() => navigation.replace("Login")} // Replace with your login screen route
+          onPress={() => navigation.replace("Login")}
           style={styles.loginButton}
           labelStyle={styles.buttonLabel}
         >
@@ -148,21 +149,22 @@ export default function CartScreen({ navigation }) {
                   style={styles.qtyButton}
                   onPress={() => decreaseQty(item.caId)}
                 >
-                  <Text style={styles.qtyButtonText}>-</Text>
+                  <MaterialIcons name="remove" size={24} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.qtyText}>{item.caQty}</Text>
                 <TouchableOpacity
                   style={styles.qtyButton}
                   onPress={() => increaseQty(item.caId)}
                 >
-                  <Text style={styles.qtyButtonText}>+</Text>
+                  <MaterialIcons name="add" size={24} color="#333" />
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
                 style={styles.removeButton}
                 onPress={() => removeFromCart(item.caId)}
               >
-                <Text style={styles.removeButtonText}>Remove</Text>
+                <MaterialIcons name="delete" size={24} color="#fff" />
+                <Text style={styles.removeButtonText}> Remove</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -190,8 +192,8 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    marginVertical: 8,
+    padding: 20,
+    marginVertical: 10,
     borderRadius: 10,
     backgroundColor: "#ffffff",
     shadowColor: "#000",
@@ -209,16 +211,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
   },
-  qtyButton: { padding: 6, backgroundColor: "#e0e0e0", borderRadius: 6 },
-  qtyButtonText: { fontSize: 18, color: "#333" },
-  qtyText: { marginHorizontal: 10, fontSize: 16 },
+  qtyButton: {
+    padding: 8,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 6,
+    marginHorizontal: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  qtyText: { fontSize: 16 },
   removeButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     backgroundColor: "#ff6666",
     borderRadius: 4,
     marginTop: 10,
   },
-  removeButtonText: { color: "#fff", fontSize: 14 },
+  removeButtonText: { color: "#fff", fontSize: 14, marginLeft: 5 },
   listContainer: { paddingBottom: 16 },
 });
