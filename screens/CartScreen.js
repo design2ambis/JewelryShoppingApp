@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
@@ -8,30 +9,41 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
+  Alert, // Import Alert
 } from "react-native";
+import { Button } from "react-native-paper";
 
-export default function CartScreen() {
+export default function CartScreen({ navigation }) {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [usertoken, setUsertoken] = useState(null);
 
   useEffect(() => {
     const fetchCartData = async () => {
-      const usertoken = AsyncStorage.getItem("usertoken");
+      const token = await AsyncStorage.getItem("usertoken");
 
-      if (usertoken && usertoken != "") {
+      if (token) {
+        setUsertoken(token);
         try {
           const response = await fetch(
-            `https://nivsjewels.com/api/select?get_cart&token=${usertoken}`
+            `https://nivsjewels.com/api/select?get_cart&token=${token}`
           );
           const data = await response.json();
-          setCartItems(data.data); // Adjust this based on the structure of the response
+
+          if (data?.data) {
+            setCartItems(data.data);
+          } else {
+            setError("Failed to fetch cart items.");
+          }
         } catch (err) {
           setError(err.message);
         } finally {
           setLoading(false);
         }
       } else {
+        setError("User token not found.");
+        setLoading(false);
       }
     };
 
@@ -39,7 +51,21 @@ export default function CartScreen() {
   }, []);
 
   const removeFromCart = (caId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.caId !== caId));
+    Alert.alert(
+      "Remove Item",
+      "Are you sure you want to remove this item from the cart?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "OK",
+          onPress: () => {
+            setCartItems((prevItems) =>
+              prevItems.filter((item) => item.caId !== caId)
+            );
+          },
+        },
+      ]
+    );
   };
 
   const increaseQty = (caId) => {
@@ -64,6 +90,28 @@ export default function CartScreen() {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#9b6f25" />
+      </View>
+    );
+  }
+
+  if (!usertoken) {
+    return (
+      <View style={styles.noTokenContainer}>
+        <Image
+          source={{
+            uri: "https://cdn-icons-png.flaticon.com/512/5087/5087579.png",
+          }} // Replace with your image URL
+          style={styles.noTokenImage}
+        />
+        <Text style={styles.noTokenText}>You are not logged in</Text>
+        <Button
+          mode="contained"
+          onPress={() => navigation.replace("Login")} // Replace with your login screen route
+          style={styles.loginButton}
+          labelStyle={styles.buttonLabel}
+        >
+          Go to Login
+        </Button>
       </View>
     );
   }
@@ -126,14 +174,19 @@ export default function CartScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  container: { flex: 1, padding: 16, backgroundColor: "#f8f8f8" },
+  noTokenContainer: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#f8f8f8",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
-  listContainer: {
-    paddingBottom: 16,
-  },
+  noTokenImage: { width: 200, height: 200, marginBottom: 20 },
+  noTokenText: { fontSize: 18, fontWeight: "bold", marginBottom: 20 },
+  loginButton: { backgroundColor: "#17A6A8", padding: 6 },
+  buttonLabel: { color: "#fff", fontSize: 16 },
+  errorText: { color: "red", fontSize: 16, textAlign: "center" },
+  emptyText: { color: "#999", fontSize: 18, textAlign: "center" },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -144,71 +197,28 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  itemImage: {
-    width: 100, // Increased image size
-    height: 100, // Increased image size
-    borderRadius: 10,
-    marginRight: 16,
-  },
-  itemDetails: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  itemWeight: {
-    color: "#777",
-    marginVertical: 4,
-  },
+  itemImage: { width: 80, height: 80, borderRadius: 10, marginRight: 16 },
+  itemDetails: { flex: 1 },
+  itemName: { fontSize: 16, fontWeight: "bold", color: "#333" },
+  itemWeight: { fontSize: 14, color: "#666" },
   quantityContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 8,
+    marginVertical: 10,
   },
-  qtyButton: {
-    backgroundColor: "#000", // Black button color
-    width: 30,
-    height: 30,
-    borderRadius: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 5,
-    elevation: 2, // Add a shadow effect for depth
-  },
-  qtyButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 18,
-  },
-  qtyText: {
-    color: "#4a4849",
-    fontSize: 20, // Increased font size for better visibility
-    fontWeight: "semibold", // Increased font weight for better visibility
-    marginHorizontal: 10,
-  },
+  qtyButton: { padding: 6, backgroundColor: "#e0e0e0", borderRadius: 6 },
+  qtyButtonText: { fontSize: 18, color: "#333" },
+  qtyText: { marginHorizontal: 10, fontSize: 16 },
   removeButton: {
-    backgroundColor: "#ff6f61", // Updated button color (light red)
-    paddingVertical: 10,
-    borderRadius: 5,
-    alignItems: "center",
-    marginTop: 8,
-    elevation: 2,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: "#ff6666",
+    borderRadius: 4,
+    marginTop: 10,
   },
-  removeButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  errorText: {
-    color: "red",
-    fontSize: 16,
-  },
-  emptyText: {
-    fontSize: 18,
-    color: "#777",
-  },
+  removeButtonText: { color: "#fff", fontSize: 14 },
+  listContainer: { paddingBottom: 16 },
 });

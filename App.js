@@ -2,15 +2,20 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { MaterialIcons } from "@expo/vector-icons"; // Icon set
+import { createStackNavigator } from "@react-navigation/stack";
+import { MaterialIcons } from "@expo/vector-icons";
 import HomeScreen from "./screens/HomeScreen";
 import CartScreen from "./screens/CartScreen";
 import SearchScreen from "./screens/SearchScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import LoginScreen from "./screens/LoginScreen";
+import RegisterScreen from "./screens/RegisterScreen";
 
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
+// Bottom Tab Navigation
 function BottomTabs() {
   return (
     <Tab.Navigator
@@ -59,11 +64,36 @@ function BottomTabs() {
   );
 }
 
+// Stack Navigator to include LoginScreen
+function MainStack() {
+  return (
+    <Stack.Navigator>
+      {/* Add the BottomTabs as the main screen */}
+      <Stack.Screen
+        name="StackMain"
+        component={BottomTabs}
+        options={{ headerShown: false }}
+      />
+      {/* Add the LoginScreen */}
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ title: "Login" }}
+      />
+      <Stack.Screen
+        name="Register"
+        component={RegisterScreen}
+        options={{ title: "Register" }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 function App() {
   return (
     <NavigationContainer>
       <Drawer.Navigator>
-        <Drawer.Screen name="DrawerHome" component={BottomTabs} />
+        <Drawer.Screen name="DrawerMain" component={MainStack} />
       </Drawer.Navigator>
     </NavigationContainer>
   );
