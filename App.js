@@ -10,6 +10,7 @@ import SearchScreen from "./screens/SearchScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
+import ProductDetailScreen from "./screens/ProductDetailScreen"; // Import ProductDetailScreen
 
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
@@ -64,7 +65,7 @@ function BottomTabs() {
   );
 }
 
-// Stack Navigator to include LoginScreen
+// Stack Navigator to include LoginScreen and ProductDetailScreen
 function MainStack() {
   return (
     <Stack.Navigator>
@@ -84,6 +85,12 @@ function MainStack() {
         name="Register"
         component={RegisterScreen}
         options={{ title: "Register" }}
+      />
+      {/* Add the ProductDetailScreen */}
+      <Stack.Screen
+        name="ProductDetails"
+        component={ProductDetailScreen}
+        options={{ title: "Product Details" }}
       />
     </Stack.Navigator>
   );

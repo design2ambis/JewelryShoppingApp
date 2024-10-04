@@ -9,9 +9,10 @@ import {
   StyleSheet,
 } from "react-native";
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
-  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [selectedCategorySubcategory, setSelectedCategorySubcategory] =
+    useState(null); // Corrected function name
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
@@ -54,37 +55,56 @@ const HomeScreen = () => {
   };
 
   const handleSubcategoryPress = (catName, subName) => {
-    setSelectedSubcategory(subName);
+    setSelectedCategorySubcategory({ catName, subName }); // Set selected category and subcategory as an object
     fetchProducts(catName, subName);
   };
 
-  const renderCategoryItem = ({ item }) => (
+  const handleProductPress = (designNo) => {
+    navigation.navigate("ProductDetails", { designNo });
+  };
+
+  const renderCategoryItem = ({ item }) => {
+    const isSelected =
+      selectedCategorySubcategory?.catName === item.cat_name && // Check if the category name matches
+      selectedCategorySubcategory?.subName === item.sub_name; // Check if the subcategory name matches
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.categoryItem,
+          isSelected && styles.selectedCategorySubcategory,
+        ]}
+        onPress={() => handleSubcategoryPress(item.cat_name, item.sub_name)}
+      >
+        <Text style={styles.categoryName}>
+          {item.cat_name} {item.sub_name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderProductItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.categoryItem}
-      onPress={() => handleSubcategoryPress(item.cat_name, item.sub_name)}
+      style={styles.productItem}
+      onPress={() => handleProductPress(item.no)}
     >
-      <Image source={{ uri: item.image }} style={styles.categoryImage} />
-      <Text style={styles.categoryName}>{item.sub_name}</Text>
+      <Image source={{ uri: item.image }} style={styles.productImage} />
+      <Text style={styles.productTitle}>{item.no}</Text>
+      <Text style={styles.productDetail}>Weight: {item.weight}</Text>
     </TouchableOpacity>
   );
 
-  const renderProductItem = ({ item }) => (
-    <View style={styles.productItem}>
-      <Image source={{ uri: item.image }} style={styles.productImage} />
-      <Text>{item.no}</Text>
-      <Text>Weight: {item.weight}</Text>
-      {/* Add "Add to Cart" button */}
-      <TouchableOpacity style={styles.addButton}>
-        <Text style={styles.addButtonText}>Add to Cart</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {loading ? (
-        <ActivityIndicator size="small" color="#0000ff" />
-      ) : (
+      <View style={styles.categoryContainer}>
         <FlatList
           data={categories}
           keyExtractor={(item) => item.id.toString()}
@@ -92,7 +112,7 @@ const HomeScreen = () => {
           horizontal
           showsHorizontalScrollIndicator={false}
         />
-      )}
+      </View>
       {loadingProducts && <ActivityIndicator size="large" color="#0000ff" />}
       {products.length > 0 && !loadingProducts && (
         <FlatList
@@ -100,13 +120,8 @@ const HomeScreen = () => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderProductItem}
           style={styles.productList}
-          numColumns={2} // Set to 2 for grid layout
+          numColumns={2}
         />
-      )}
-      {selectedSubcategory && !loadingProducts && (
-        <Text style={styles.selectedSubcategory}>
-          Selected Subcategory: {selectedSubcategory}
-        </Text>
       )}
     </View>
   );
@@ -115,54 +130,77 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 10,
+    backgroundColor: "#f8f8f8",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8f8f8",
+  },
+  categoryContainer: {
+    justifyContent: "center",
+    marginBottom: 16,
   },
   categoryItem: {
     marginRight: 12,
     alignItems: "center",
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
-  categoryImage: {
-    width: 20,
-    height: 20,
+  selectedCategorySubcategory: {
+    borderColor: "#ffb400",
+    borderWidth: 2,
+    backgroundColor: "#f0f0f0", // Changed to a light gray color
   },
   categoryName: {
     textAlign: "center",
     fontWeight: "bold",
-    marginTop: 12,
-    marginBottom: 12,
+    color: "#333",
+    fontSize: 14,
   },
   productList: {
-    marginTop: 16,
+    marginTop: 20,
   },
   productItem: {
     flex: 1,
     marginBottom: 12,
     alignItems: "center",
-    padding: 10,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    marginHorizontal: 4, // Margin between items
+    borderColor: "#ddd",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    marginHorizontal: 4,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   productImage: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    marginBottom: 10,
   },
-  selectedSubcategory: {
-    marginTop: 16,
-    fontSize: 18,
+  productTitle: {
+    fontSize: 16,
     fontWeight: "bold",
+    color: "#444",
   },
-  addButton: {
-    backgroundColor: '#007bff',
-    padding: 8,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  productDetail: {
+    fontSize: 14,
+    color: "#777",
   },
 });
 
