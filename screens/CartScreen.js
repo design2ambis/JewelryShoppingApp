@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
@@ -13,13 +13,14 @@ import {
 } from "react-native";
 import { Button } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native"; // Import useFocusEffect
 
 export default function CartScreen({ navigation }) {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [usertoken, setUsertoken] = useState(null);
-  const [isCartEmpty, setIsCartEmpty] = useState(false); // New state for empty cart
+  const [isCartEmpty, setIsCartEmpty] = useState(false);
 
   const fetchCartData = async () => {
     const token = await AsyncStorage.getItem("usertoken");
@@ -36,13 +37,13 @@ export default function CartScreen({ navigation }) {
           setCartItems(data.data);
           setIsCartEmpty(false);
         } else {
-          setIsCartEmpty(true); // Set empty cart state
+          setIsCartEmpty(true);
           setError("Your Cart is Empty.");
         }
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false); // Stop loading spinner
+        setLoading(false);
       }
     } else {
       setError("User token not found.");
@@ -50,9 +51,13 @@ export default function CartScreen({ navigation }) {
     }
   };
 
-  useEffect(() => {
-    fetchCartData();
-  }, []);
+  // Use useFocusEffect to refetch cart data whenever the cart screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true); // Start loading when screen is focused
+      fetchCartData();
+    }, [])
+  );
 
   const updateCart = async (caId, qty, type) => {
     try {

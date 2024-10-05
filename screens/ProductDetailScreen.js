@@ -9,9 +9,9 @@ import {
   ScrollView,
   Modal,
   Pressable,
+  Alert,
 } from "react-native";
-
-// Import the Image Zoom component from a library
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import ImageViewer from "react-native-image-zoom-viewer";
 
 const ProductDetailScreen = ({ route }) => {
@@ -19,6 +19,7 @@ const ProductDetailScreen = ({ route }) => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [qty, setQty] = useState(1); // Initial quantity for the cart
 
   useEffect(() => {
     fetchProductDetails();
@@ -38,6 +39,45 @@ const ProductDetailScreen = ({ route }) => {
     }
   };
 
+  const addToCart = async () => {
+    const token = await AsyncStorage.getItem("usertoken"); // Retrieve user token
+
+    if (!token) {
+      Alert.alert("Error", "User is not logged in.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://nivsjewels.com/api/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // Set the content type to JSON
+        },
+        body: JSON.stringify({
+          add_cart: "",
+          pid: product.design_id,
+          qty: qty,
+          prono: product.design_no,
+          prowgt: product.design_weight,
+          proimg: product.design_image,
+          token: token, // User token from AsyncStorage
+        }),
+      });
+
+
+      const data = await response.json();
+
+      if (data.status) {
+        Alert.alert("Success", data.message);
+      } else {
+        Alert.alert("Error", "Failed to add to cart.");
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      Alert.alert("Error", "An error occurred. Please try again.");
+    }
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
@@ -46,7 +86,6 @@ const ProductDetailScreen = ({ route }) => {
     <ScrollView style={styles.container}>
       {product && (
         <>
-          {/* Image Viewer for zooming */}
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <Image
               source={{ uri: product.design_image }}
@@ -69,7 +108,7 @@ const ProductDetailScreen = ({ route }) => {
             Subcategory: {product.sub_cat_name}
           </Text>
 
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={addToCart}>
             <Text style={styles.addButtonText}>Add to Cart</Text>
           </TouchableOpacity>
 
@@ -82,8 +121,8 @@ const ProductDetailScreen = ({ route }) => {
           >
             <View style={styles.modalBackground}>
               <ImageViewer
-                imageUrls={[{ url: product.design_image }]} // Pass image URL
-                onSwipeDown={() => setModalVisible(false)} // Dismiss on swipe down
+                imageUrls={[{ url: product.design_image }]}
+                onSwipeDown={() => setModalVisible(false)}
                 enableSwipeDown
               />
               <Pressable
@@ -133,8 +172,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     marginTop: 20,
-    elevation: 5, // Add shadow for Android
-    shadowColor: "#000", // Add shadow for iOS
+    elevation: 5,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
