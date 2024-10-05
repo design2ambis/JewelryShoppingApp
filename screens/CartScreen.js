@@ -19,37 +19,69 @@ export default function CartScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [usertoken, setUsertoken] = useState(null);
+  const [isCartEmpty, setIsCartEmpty] = useState(false); // New state for empty cart
+
+  const fetchCartData = async () => {
+    const token = await AsyncStorage.getItem("usertoken");
+
+    if (token) {
+      setUsertoken(token);
+      try {
+        const response = await fetch(
+          `https://nivsjewels.com/api/select?get_cart&token=${token}`
+        );
+        const data = await response.json();
+
+        if (data.status == 200 && data.data.length > 0) {
+          setCartItems(data.data);
+          setIsCartEmpty(false);
+        } else {
+          setIsCartEmpty(true); // Set empty cart state
+          setError("Your Cart is Empty.");
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false); // Stop loading spinner
+      }
+    } else {
+      setError("User token not found.");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCartData = async () => {
-      const token = await AsyncStorage.getItem("usertoken");
-
-      if (token) {
-        setUsertoken(token);
-        try {
-          const response = await fetch(
-            `https://nivsjewels.com/api/select?get_cart&token=${token}`
-          );
-          const data = await response.json();
-
-          if (data?.data) {
-            setCartItems(data.data);
-          } else {
-            setError("Failed to fetch cart items.");
-          }
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setError("User token not found.");
-        setLoading(false);
-      }
-    };
-
     fetchCartData();
   }, []);
+
+  const updateCart = async (caId, qty, type) => {
+    try {
+      const response = await fetch(
+        `https://nivsjewels.com/api/update?update_cart=&id=${caId}&qty=${qty}&type=${type}`
+      );
+      const data = await response.json();
+
+      if (data.update_sta === true) {
+        fetchCartData(); // Fetch new cart data after update
+      } else {
+        Alert.alert("Error", data.message || "Could not update cart.");
+      }
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
+  };
+
+  const increaseQty = (caId, currentQty) => {
+    updateCart(caId, currentQty, "add");
+  };
+
+  const decreaseQty = (caId, currentQty) => {
+    if (currentQty > 1) {
+      updateCart(caId, currentQty, "sub");
+    } else {
+      removeFromCart(caId);
+    }
+  };
 
   const removeFromCart = (caId) => {
     Alert.alert(
@@ -57,39 +89,14 @@ export default function CartScreen({ navigation }) {
       "Are you sure you want to remove this item from the cart?",
       [
         { text: "Cancel", style: "cancel" },
-        {
-          text: "OK",
-          onPress: () => {
-            setCartItems((prevItems) =>
-              prevItems.filter((item) => item.caId !== caId)
-            );
-          },
-        },
+        { text: "OK", onPress: () => updateCart(caId, 0, "delete") },
       ]
-    );
-  };
-
-  const increaseQty = (caId) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.caId === caId ? { ...item, qty: item.caQty + 1 } : item
-      )
-    );
-  };
-
-  const decreaseQty = (caId) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.caId === caId && item.qty > 1
-          ? { ...item, qty: item.qty - 1 }
-          : item
-      )
     );
   };
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#9b6f25" />
       </View>
     );
@@ -117,18 +124,16 @@ export default function CartScreen({ navigation }) {
     );
   }
 
-  if (error) {
+  if (error && isCartEmpty) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Error: {error}</Text>
-      </View>
-    );
-  }
-
-  if (cartItems.length === 0) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.emptyText}>Your Cart is Empty</Text>
+      <View style={styles.emptyCartContainer}>
+        <Image
+          source={{
+            uri: "https://cdn-icons-png.flaticon.com/512/11329/11329060.png",
+          }}
+          style={styles.emptyCartImage}
+        />
+        <Text style={styles.emptyCartText}>Your Cart is Empty</Text>
       </View>
     );
   }
@@ -147,14 +152,14 @@ export default function CartScreen({ navigation }) {
               <View style={styles.quantityContainer}>
                 <TouchableOpacity
                   style={styles.qtyButton}
-                  onPress={() => decreaseQty(item.caId)}
+                  onPress={() => decreaseQty(item.caId, item.caQty)}
                 >
                   <MaterialIcons name="remove" size={24} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.qtyText}>{item.caQty}</Text>
                 <TouchableOpacity
                   style={styles.qtyButton}
-                  onPress={() => increaseQty(item.caId)}
+                  onPress={() => increaseQty(item.caId, item.caQty)}
                 >
                   <MaterialIcons name="add" size={24} color="#333" />
                 </TouchableOpacity>
@@ -177,6 +182,11 @@ export default function CartScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#f8f8f8" },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   noTokenContainer: {
     flex: 1,
     justifyContent: "center",
@@ -187,8 +197,13 @@ const styles = StyleSheet.create({
   noTokenText: { fontSize: 18, fontWeight: "bold", marginBottom: 20 },
   loginButton: { backgroundColor: "#17A6A8", padding: 6 },
   buttonLabel: { color: "#fff", fontSize: 16 },
-  errorText: { color: "red", fontSize: 16, textAlign: "center" },
-  emptyText: { color: "#999", fontSize: 18, textAlign: "center" },
+  emptyCartContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyCartImage: { width: 200, height: 200, marginBottom: 20 },
+  emptyCartText: { fontSize: 18, fontWeight: "bold", color: "#666" },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",

@@ -12,10 +12,13 @@ import {
 const HomeScreen = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
   const [selectedCategorySubcategory, setSelectedCategorySubcategory] =
-    useState(null); // Corrected function name
+    useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMoreProducts, setHasMoreProducts] = useState(true);
+  const [noProductImage, setNoProductImage] = useState(false); // State for no product image
 
   useEffect(() => {
     fetchCategories();
@@ -37,15 +40,23 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const fetchProducts = async (cat, subcat) => {
+  const fetchProducts = async (cat, subcat, page = 1) => {
+    if (loadingProducts) return;
+
     setLoadingProducts(true);
+    setNoProductImage(false); // Reset no product image state
     try {
       const response = await fetch(
-        `https://utsarvajewels.com/api/crud?get_product_details_overall&cat=${cat}&subcat=${subcat}&&page=1&&wgt=0&&type=0&&collection=0`
+        `https://utsarvajewels.com/api/crud?get_product_details_overall&cat=${cat}&subcat=${subcat}&page=${page}&wgt=0&type=0&collection=0`
       );
       const data = await response.json();
       if (data.status.status === 200) {
         setProducts(data.data);
+        setHasMoreProducts(data.data.length > 0);
+      } else if (data.status.status === 400) {
+        setProducts([]); // No products, clear product list
+        setNoProductImage(true); // Show no product image
+        setHasMoreProducts(false); // Disable pagination
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -55,18 +66,33 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleSubcategoryPress = (catName, subName) => {
-    setSelectedCategorySubcategory({ catName, subName }); // Set selected category and subcategory as an object
-    fetchProducts(catName, subName);
+    setSelectedCategorySubcategory({ catName, subName });
+    setProducts([]); // Reset products when category changes
+    setCurrentPage(1); // Reset to page 1
+    fetchProducts(catName, subName, 1); // Fetch initial products
   };
 
   const handleProductPress = (designNo) => {
     navigation.navigate("ProductDetails", { designNo });
   };
 
+  const loadProducts = (page) => {
+    if (selectedCategorySubcategory) {
+      const { catName, subName } = selectedCategorySubcategory;
+      fetchProducts(catName, subName, page);
+    }
+  };
+
+  const handlePageChange = (page) => {
+    if (page < 1 || (!hasMoreProducts && page > currentPage)) return;
+    setCurrentPage(page);
+    loadProducts(page);
+  };
+
   const renderCategoryItem = ({ item }) => {
     const isSelected =
-      selectedCategorySubcategory?.catName === item.cat_name && // Check if the category name matches
-      selectedCategorySubcategory?.subName === item.sub_name; // Check if the subcategory name matches
+      selectedCategorySubcategory?.catName === item.cat_name &&
+      selectedCategorySubcategory?.subName === item.sub_name;
 
     return (
       <TouchableOpacity
@@ -94,34 +120,88 @@ const HomeScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  if (loading) {
+  const Pagination = ({ currentPage, onPageChange, hasMoreProducts }) => {
+    if (products.length === 0) return null; // Hide pagination if no products
+
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View style={styles.paginationContainer}>
+        <TouchableOpacity
+          style={[
+            styles.paginationButton,
+            currentPage === 1 && styles.disabledButton,
+          ]}
+          onPress={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          <Text style={styles.paginationText}>{"<<<"}</Text>
+        </TouchableOpacity>
+        <Text style={styles.paginationText}>{currentPage}</Text>
+        <TouchableOpacity
+          style={[
+            styles.paginationButton,
+            !hasMoreProducts && styles.disabledButton,
+          ]}
+          onPress={() => handlePageChange(currentPage + 1)}
+          disabled={!hasMoreProducts}
+        >
+          <Text style={styles.paginationText}>{">>>"}</Text>
+        </TouchableOpacity>
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.categoryContainer}>
-        <FlatList
-          data={categories}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderCategoryItem}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        />
-      </View>
-      {loadingProducts && <ActivityIndicator size="large" color="#0000ff" />}
-      {products.length > 0 && !loadingProducts && (
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderProductItem}
-          style={styles.productList}
-          numColumns={2}
-        />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      ) : (
+        <>
+          <View style={styles.categoryContainer}>
+            <FlatList
+              data={categories}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderCategoryItem}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            />
+          </View>
+
+          {loadingProducts && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+          )}
+
+          {noProductImage && (
+            <View style={styles.noProductContainer}>
+              <Image
+                source={{
+                  uri: "https://notebookstore.in/image/no-product-found.png",
+                }}
+                style={styles.noProductImage}
+              />
+              {/* <Text style={styles.noProductText}>No Products Found</Text> */}
+            </View>
+          )}
+
+          {!noProductImage && products.length > 0 && !loadingProducts && (
+            <FlatList
+              data={products}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderProductItem}
+              style={styles.productList}
+              numColumns={2}
+            />
+          )}
+
+          <Pagination
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            hasMoreProducts={hasMoreProducts}
+          />
+        </>
       )}
     </View>
   );
@@ -137,7 +217,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8f8f8",
   },
   categoryContainer: {
     justifyContent: "center",
@@ -160,7 +239,7 @@ const styles = StyleSheet.create({
   selectedCategorySubcategory: {
     borderColor: "#ffb400",
     borderWidth: 2,
-    backgroundColor: "#f0f0f0", // Changed to a light gray color
+    backgroundColor: "#f0f0f0",
   },
   categoryName: {
     textAlign: "center",
@@ -201,6 +280,40 @@ const styles = StyleSheet.create({
   productDetail: {
     fontSize: 14,
     color: "#777",
+  },
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#f8f8f8",
+  },
+  paginationButton: {
+    padding: 10,
+    backgroundColor: "#007bff",
+    borderRadius: 5,
+  },
+  disabledButton: {
+    backgroundColor: "#ccc",
+  },
+  paginationText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  noProductContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noProductImage: {
+    width: 400,
+    height: 200,
+    resizeMode: "contain",
+  },
+  noProductText: {
+    fontSize: 18,
+    color: "#555",
+    marginTop: 10,
   },
 });
 

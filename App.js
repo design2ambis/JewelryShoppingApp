@@ -90,7 +90,7 @@ function MainStack() {
       <Stack.Screen
         name="ProductDetails"
         component={ProductDetailScreen}
-        options={{ title: "Product Details" }}
+        options={{ title: "Back to Category" }}
       />
     </Stack.Navigator>
   );
@@ -100,7 +100,7 @@ function App() {
   return (
     <NavigationContainer>
       <Drawer.Navigator>
-        <Drawer.Screen name="DrawerMain" component={MainStack} />
+        <Drawer.Screen name="Nivsjewels" component={MainStack} />
       </Drawer.Navigator>
     </NavigationContainer>
   );
