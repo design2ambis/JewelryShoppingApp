@@ -39,36 +39,47 @@ export default function ChangePasswordScreen({ navigation }) {
 
     setLoading(true);
     try {
+      const usertoken = await AsyncStorage.getItem("usertoken");
       const useremail = await AsyncStorage.getItem("useremail");
-      const response = await fetch("https://nivsjewels.com/api/update", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          useremail,
-          currentPassword,
-          newPassword,
-          confirmNewPassword,
-          accountpasswordchange: "",
-        }),
-      });
 
-      const data = await response.json(); console.log("Response Data:", data); // Log the response for debugging
-
-      if (data.status === true) {
-        showMessage({
-          message: "Success",
-          description: data.message,
-          type: "success",
+      if (usertoken && usertoken !== "") {
+        const response = await fetch("https://nivsjewels.com/api/update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            useremail,
+            currentPassword,
+            newPassword,
+            confirmNewPassword,
+            accountpasswordchange: "",
+          }),
         });
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmNewPassword("");
+
+        const data = await response.json();
+
+        if (data.status === true) {
+          showMessage({
+            message: "Success",
+            description: data.message,
+            type: "success",
+          });
+          // Reset fields after successful change
+          setCurrentPassword("");
+          setNewPassword("");
+          setConfirmNewPassword("");
+        } else {
+          showMessage({
+            message: data.msg || "Change password failed",
+            description: data.message || "An unknown error occurred.",
+            type: "danger",
+          });
+        }
       } else {
         showMessage({
-          message: data.msg || "Change password failed",
-          description: data.message || "An unknown error occurred.",
+          message: "Error",
+          description: "Login to Change Password",
           type: "danger",
         });
       }

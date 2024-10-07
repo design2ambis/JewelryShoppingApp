@@ -11,8 +11,8 @@ import {
   Image,
 } from "react-native";
 import { showMessage } from "react-native-flash-message";
-import { LinearGradient } from "expo-linear-gradient"; // Import LinearGradient
-import FlashMessage from "react-native-flash-message"; // Import FlashMessage
+import { LinearGradient } from "expo-linear-gradient";
+import FlashMessage from "react-native-flash-message";
 
 export default function ProfileScreen({ navigation }) {
   const [userData, setUserData] = useState({
@@ -22,12 +22,11 @@ export default function ProfileScreen({ navigation }) {
   });
   const [loading, setLoading] = useState(true);
   const [usertoken, setUsertoken] = useState(null);
-  const [isLoginForm, setIsLoginForm] = useState(true); // State to toggle between login and register forms
+  const [isLoginForm, setIsLoginForm] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Function to fetch user data
   const fetchUserData = async () => {
     const token = await AsyncStorage.getItem("usertoken");
     setUsertoken(token);
@@ -61,7 +60,6 @@ export default function ProfileScreen({ navigation }) {
     fetchUserData();
   }, []);
 
-  // Function to handle user login
   const handleLogin = async () => {
     if (!email || !password) {
       showMessage({
@@ -101,7 +99,6 @@ export default function ProfileScreen({ navigation }) {
           type: "success",
         });
 
-        // Reload user data after successful login
         fetchUserData();
       } else {
         showMessage({
@@ -121,7 +118,6 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
-  // Function to handle user registration
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
       showMessage({
@@ -160,7 +156,7 @@ export default function ProfileScreen({ navigation }) {
           type: "success",
         });
 
-        setIsLoginForm(true); // Switch to the login form
+        setIsLoginForm(true);
       } else {
         showMessage({
           message: data.msg || "Registration failed",
@@ -179,7 +175,6 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
-  // Function to handle user logout
   const handleLogout = async () => {
     try {
       await AsyncStorage.multiRemove([
@@ -249,7 +244,7 @@ export default function ProfileScreen({ navigation }) {
                 Don't have an account?
                 <Text
                   style={styles.registerhere}
-                  onPress={() => setIsLoginForm(false)} // Switch to register form
+                  onPress={() => setIsLoginForm(false)}
                 >
                   {" "}
                   Register here
@@ -288,7 +283,7 @@ export default function ProfileScreen({ navigation }) {
                 Already have an account?
                 <Text
                   style={styles.registerhere}
-                  onPress={() => setIsLoginForm(true)} // Switch to login form
+                  onPress={() => setIsLoginForm(true)}
                 >
                   {" "}
                   Login here
@@ -297,12 +292,10 @@ export default function ProfileScreen({ navigation }) {
             </View>
           )}
         </View>
-        
       </LinearGradient>
     );
   }
 
-  // Render user profile if logged in
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
@@ -313,13 +306,9 @@ export default function ProfileScreen({ navigation }) {
       />
       <TextInput style={styles.input} value={userData.email} editable={false} />
       <TextInput style={styles.input} value={userData.phone} editable={false} />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogout} // Call handleLogout on press
-      >
+      <TouchableOpacity style={styles.button} onPress={handleLogout}>
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
-      <FlashMessage position="bottom" />
       <FlashMessage position="bottom" />
     </View>
   );
@@ -334,39 +323,21 @@ const styles = StyleSheet.create({
     height: 50,
     borderColor: "#ccc",
     borderWidth: 1,
-    borderRadius: 8,
-    paddingLeft: 15, // Increase padding for better touch target
-    marginBottom: 20,
-    backgroundColor: "#ffffff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 1, // for Android
+    borderRadius: 5,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    backgroundColor: "#fff",
   },
   button: {
+    height: 50,
     backgroundColor: "#007BFF",
-    borderRadius: 8,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    marginBottom: 10,
-    alignItems: "center",
-  },
-  loginButton: {
-    marginTop: 20, // Adjust this value to move it slightly lower
-  },
-  buttonText: {
-    color: "#ffffff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  registerText: { textAlign: "center", marginTop: 20, color: "#000" },
-  registerhere: { color: "#007BFF" },
-  loadingContainer: {
-    // New style for loading spinner
-    flex: 1,
+    borderRadius: 5,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f0f2f5", // Optional: Background color while loading
+    marginTop: 10,
   },
+  buttonText: { color: "#fff", fontWeight: "bold" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  registerText: { marginTop: 10, textAlign: "center" },
+  registerhere: { color: "#007BFF", fontWeight: "bold" },
 });
