@@ -18,33 +18,45 @@ const HomeScreen = ({ navigation }) => {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreProducts, setHasMoreProducts] = useState(true);
-  const [noProductImage, setNoProductImage] = useState(false); // State for no product image
+  const [noProductImage, setNoProductImage] = useState(false);
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(
+          "https://utsarvajewels.com/api/crud?get_random_category_list_new"
+        );
+        const data = await response.json();
+        if (data.option.status === 200) {
+          setCategories(data.data);
+
+          // Select a random category and subcategory
+          const randomCategory =
+            data.data[Math.floor(Math.random() * data.data.length)];
+          const catName = randomCategory.cat_name;
+          const subName = randomCategory.sub_name;
+
+          // Set the selected category and subcategory
+          setSelectedCategorySubcategory({ catName, subName });
+
+          // Fetch products for the random category and subcategory
+          fetchProducts(catName, subName, 1);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setLoading(false);
+      }
+    };
+
     fetchCategories();
   }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch(
-        "https://utsarvajewels.com/api/crud?get_random_category_list_new"
-      );
-      const data = await response.json();
-      if (data.option.status === 200) {
-        setCategories(data.data);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      setLoading(false);
-    }
-  };
 
   const fetchProducts = async (cat, subcat, page = 1) => {
     if (loadingProducts) return;
 
     setLoadingProducts(true);
-    setNoProductImage(false); // Reset no product image state
+    setNoProductImage(false);
     try {
       const response = await fetch(
         `https://utsarvajewels.com/api/crud?get_product_details_overall&cat=${cat}&subcat=${subcat}&page=${page}&wgt=0&type=0&collection=0`
@@ -54,9 +66,9 @@ const HomeScreen = ({ navigation }) => {
         setProducts(data.data);
         setHasMoreProducts(data.data.length > 0);
       } else if (data.status.status === 400) {
-        setProducts([]); // No products, clear product list
-        setNoProductImage(true); // Show no product image
-        setHasMoreProducts(false); // Disable pagination
+        setProducts([]);
+        setNoProductImage(true);
+        setHasMoreProducts(false);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -67,9 +79,9 @@ const HomeScreen = ({ navigation }) => {
 
   const handleSubcategoryPress = (catName, subName) => {
     setSelectedCategorySubcategory({ catName, subName });
-    setProducts([]); // Reset products when category changes
-    setCurrentPage(1); // Reset to page 1
-    fetchProducts(catName, subName, 1); // Fetch initial products
+    setProducts([]);
+    setCurrentPage(1);
+    fetchProducts(catName, subName, 1);
   };
 
   const handleProductPress = (designNo) => {
@@ -121,7 +133,7 @@ const HomeScreen = ({ navigation }) => {
   );
 
   const Pagination = ({ currentPage, onPageChange, hasMoreProducts }) => {
-    if (products.length === 0) return null; // Hide pagination if no products
+    if (products.length === 0) return null;
 
     return (
       <View style={styles.paginationContainer}>
@@ -182,7 +194,6 @@ const HomeScreen = ({ navigation }) => {
                 }}
                 style={styles.noProductImage}
               />
-              {/* <Text style={styles.noProductText}>No Products Found</Text> */}
             </View>
           )}
 
@@ -309,11 +320,6 @@ const styles = StyleSheet.create({
     width: 400,
     height: 200,
     resizeMode: "contain",
-  },
-  noProductText: {
-    fontSize: 18,
-    color: "#555",
-    marginTop: 10,
   },
 });
 

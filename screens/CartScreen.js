@@ -119,7 +119,7 @@ export default function CartScreen({ navigation }) {
         <Text style={styles.noTokenText}>You are not logged in</Text>
         <Button
           mode="contained"
-          onPress={() => navigation.replace("Login")}
+          onPress={() => navigation.navigate("ProfileTab")}
           style={styles.loginButton}
           labelStyle={styles.buttonLabel}
         >

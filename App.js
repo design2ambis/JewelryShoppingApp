@@ -10,7 +10,8 @@ import SearchScreen from "./screens/SearchScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
-import ProductDetailScreen from "./screens/ProductDetailScreen"; // Import ProductDetailScreen
+import ProductDetailScreen from "./screens/ProductDetailScreen";
+import ChangePasswordScreen from "./screens/ChangePasswordScreen"; // Import ChangePasswordScreen
 
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
@@ -69,13 +70,11 @@ function BottomTabs() {
 function MainStack() {
   return (
     <Stack.Navigator>
-      {/* Add the BottomTabs as the main screen */}
       <Stack.Screen
         name="StackMain"
         component={BottomTabs}
         options={{ headerShown: false }}
       />
-      {/* Add the LoginScreen */}
       <Stack.Screen
         name="Login"
         component={LoginScreen}
@@ -86,7 +85,6 @@ function MainStack() {
         component={RegisterScreen}
         options={{ title: "Register" }}
       />
-      {/* Add the ProductDetailScreen */}
       <Stack.Screen
         name="ProductDetails"
         component={ProductDetailScreen}
@@ -101,6 +99,10 @@ function App() {
     <NavigationContainer>
       <Drawer.Navigator>
         <Drawer.Screen name="Nivsjewels" component={MainStack} />
+        <Drawer.Screen
+          name="Change Password"
+          component={ChangePasswordScreen}
+        />
       </Drawer.Navigator>
     </NavigationContainer>
   );
