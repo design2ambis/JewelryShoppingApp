@@ -10,8 +10,9 @@ import {
   Image,
 } from "react-native";
 import { showMessage } from "react-native-flash-message";
+import FlashMessage from "react-native-flash-message"; // Import FlashMessage
 
-export default function ChangePasswordScreen() {
+export default function ChangePasswordScreen({ navigation }) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -38,35 +39,41 @@ export default function ChangePasswordScreen() {
 
     setLoading(true);
     try {
-      const usertoken = await AsyncStorage.getItem("usertoken");
-      const response = await fetch(
-        "https://nivsjewels.com/api/change-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${usertoken}`,
-          },
-          body: JSON.stringify({ currentPassword, newPassword }),
-        }
-      );
+      const useremail = await AsyncStorage.getItem("useremail");
+      const response = await fetch("https://nivsjewels.com/api/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          useremail,
+          currentPassword,
+          newPassword,
+          confirmNewPassword,
+          accountpasswordchange: "",
+        }),
+      });
 
-      const data = await response.json();
+      const data = await response.json(); console.log("Response Data:", data); // Log the response for debugging
 
       if (data.status === true) {
         showMessage({
           message: "Success",
-          description: "Password changed successfully.",
+          description: data.message,
           type: "success",
         });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
       } else {
         showMessage({
           message: data.msg || "Change password failed",
-          description: data.text || "An unknown error occurred.",
+          description: data.message || "An unknown error occurred.",
           type: "danger",
         });
       }
     } catch (error) {
+      console.log("Error:", error); // Log any error messages
       showMessage({
         message: "Error",
         description: error.message,
@@ -125,6 +132,7 @@ export default function ChangePasswordScreen() {
       >
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
+      <FlashMessage position="bottom" />
     </View>
   );
 }
@@ -134,12 +142,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 30,
     backgroundColor: "#f0f2f5",
-    alignItems: "center", // Center align items
+    alignItems: "center",
   },
   image: {
-    width: 80, // Set your desired width
-    height: 80, // Set your desired height
-    marginBottom: 20, // Space between image and title
+    width: 80,
+    height: 80,
+    marginBottom: 20,
     marginTop: 50,
   },
   title: {
@@ -162,15 +170,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 1,
-    width: "100%", // Ensure inputs take the full width
+    width: "100%",
   },
   button: {
     backgroundColor: "#007BFF",
     borderRadius: 8,
     paddingVertical: 15,
     alignItems: "center",
-    width: "100%", // Ensure button takes the full width
-    marginTop: 210,
+    width: "100%",
+    marginTop: 10, // Adjusted margin for better layout
   },
   buttonText: {
     color: "#ffffff",
@@ -178,13 +186,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   backButton: {
-    backgroundColor: "#f15050", // Bootstrap secondary color
+    backgroundColor: "#f15050",
     borderRadius: 8,
     paddingVertical: 15,
     paddingHorizontal: 30,
     alignItems: "center",
     width: "100%",
-    margin: 10, // Space between buttons
+    marginTop: 10, // Space between buttons
   },
   backButtonText: {
     color: "#ffffff",

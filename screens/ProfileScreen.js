@@ -297,7 +297,7 @@ export default function ProfileScreen({ navigation }) {
             </View>
           )}
         </View>
-        <FlashMessage position="bottom" />
+        
       </LinearGradient>
     );
   }
@@ -319,6 +319,7 @@ export default function ProfileScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
+      <FlashMessage position="bottom" />
       <FlashMessage position="bottom" />
     </View>
   );

@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import FlashMessage from "react-native-flash-message"; // Import FlashMessage
+
 import HomeScreen from "./screens/HomeScreen";
 import CartScreen from "./screens/CartScreen";
 import SearchScreen from "./screens/SearchScreen";
@@ -11,7 +14,7 @@ import ProfileScreen from "./screens/ProfileScreen";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import ProductDetailScreen from "./screens/ProductDetailScreen";
-import ChangePasswordScreen from "./screens/ChangePasswordScreen"; // Import ChangePasswordScreen
+import ChangePasswordScreen from "./screens/ChangePasswordScreen";
 
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
@@ -95,16 +98,51 @@ function MainStack() {
 }
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Function to check user token
+  const checkUserToken = async () => {
+    const token = await AsyncStorage.getItem("usertoken");
+
+    if (token && token != "") {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+
+    setIsLoggedIn(!!token); // Set isLoggedIn based on token presence
+  };
+
+  useEffect(() => {
+    // Check user token on initial load
+    checkUserToken();
+  }, []);
+
   return (
-    <NavigationContainer>
-      <Drawer.Navigator>
-        <Drawer.Screen name="Nivsjewels" component={MainStack} />
-        <Drawer.Screen
-          name="Change Password"
-          component={ChangePasswordScreen}
-        />
-      </Drawer.Navigator>
-    </NavigationContainer>
+    <>
+      <NavigationContainer>
+        <Drawer.Navigator
+          screenOptions={
+            {
+              // You can put more common drawer options here
+            }
+          }
+          // This will check the user login status whenever the drawer opens
+          onDrawerOpen={checkUserToken}
+        >
+          <Drawer.Screen name="Nivsjewels" component={MainStack} />
+          {isLoggedIn && ( // Conditionally show the Change Password option
+            <Drawer.Screen
+              name="Change Password"
+              component={ChangePasswordScreen}
+            />
+          )}
+        </Drawer.Navigator>
+      </NavigationContainer>
+
+      {/* FlashMessage Component for Global Usage */}
+      <FlashMessage position="bottom" />
+    </>
   );
 }
 
