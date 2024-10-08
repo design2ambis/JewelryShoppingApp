@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -11,10 +11,10 @@ import HomeScreen from "./screens/HomeScreen";
 import CartScreen from "./screens/CartScreen";
 import SearchScreen from "./screens/SearchScreen";
 import ProfileScreen from "./screens/ProfileScreen";
-import LoginScreen from "./screens/LoginScreen";
-import RegisterScreen from "./screens/RegisterScreen";
 import ProductDetailScreen from "./screens/ProductDetailScreen";
 import ChangePasswordScreen from "./screens/ChangePasswordScreen";
+import OrdersScreen from "./screens/OrdersScreen";
+import OrderDetailsScreen from "./screens/OrderDetailsScreen";
 
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
@@ -70,7 +70,7 @@ function BottomTabs() {
 }
 
 // Stack Navigator to include LoginScreen and ProductDetailScreen
-function MainStack() {
+function MainStack({ setIsLoggedIn }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -79,19 +79,27 @@ function MainStack() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Login"
-        component={LoginScreen}
-        options={{ title: "Login" }}
-      />
-      <Stack.Screen
-        name="Register"
-        component={RegisterScreen}
-        options={{ title: "Register" }}
-      />
-      <Stack.Screen
         name="ProductDetails"
         component={ProductDetailScreen}
         options={{ title: "Back to Category" }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+// Orders Stack Navigator
+function OrdersStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Orders"
+        component={OrdersScreen}
+        options={{ title: "My Orders" }}
+      />
+      <Stack.Screen
+        name="OrderDetails"
+        component={OrderDetailsScreen}
+        options={{ title: "Order Details" }}
       />
     </Stack.Navigator>
   );
@@ -103,14 +111,7 @@ function App() {
   // Function to check user token
   const checkUserToken = async () => {
     const token = await AsyncStorage.getItem("usertoken");
-
-    if (token && token != "") {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
-
-    setIsLoggedIn(!!token); // Set isLoggedIn based on token presence
+    setIsLoggedIn(!!token); // Update login state
   };
 
   useEffect(() => {
@@ -121,21 +122,18 @@ function App() {
   return (
     <>
       <NavigationContainer>
-        <Drawer.Navigator
-          screenOptions={
-            {
-              // You can put more common drawer options here
-            }
-          }
-          // This will check the user login status whenever the drawer opens
-          onDrawerOpen={checkUserToken}
-        >
-          <Drawer.Screen name="Nivsjewels" component={MainStack} />
-          {isLoggedIn && ( // Conditionally show the Change Password option
-            <Drawer.Screen
-              name="Change Password"
-              component={ChangePasswordScreen}
-            />
+        <Drawer.Navigator>
+          <Drawer.Screen name="Nivsjewels">
+            {() => <MainStack setIsLoggedIn={setIsLoggedIn} />}
+          </Drawer.Screen>
+          {isLoggedIn && ( // Conditionally show extra screens when logged in
+            <>
+              <Drawer.Screen
+                name="Change Password"
+                component={ChangePasswordScreen}
+              />
+              <Drawer.Screen name="My Orders" component={OrdersStack} />
+            </>
           )}
         </Drawer.Navigator>
       </NavigationContainer>

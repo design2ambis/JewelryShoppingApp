@@ -25,7 +25,7 @@ export default function CartScreen({ navigation }) {
   const fetchCartData = async () => {
     const token = await AsyncStorage.getItem("usertoken");
 
-    if (token) {
+    if (token && token!="") {
       setUsertoken(token);
       try {
         const response = await fetch(

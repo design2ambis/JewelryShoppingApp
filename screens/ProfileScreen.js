@@ -316,9 +316,14 @@ export default function ProfileScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
-  container: { flex: 1, padding: 20, backgroundColor: "#f0f2f5" },
+  container: { 
+    flex: 1, 
+    padding: 20, 
+    backgroundColor: "#f0f2f5", 
+    justifyContent: "center" // Center content vertically
+  },
   logo: { width: 80, height: 80, alignSelf: "center", marginBottom: 30 },
-  title: { fontSize: 28, fontWeight: "bold", marginBottom: 20, color: "#333" },
+  title: { fontSize: 28, marginBottom: 20, color: "#636664", textAlign: "center" },
   input: {
     height: 50,
     borderColor: "#ccc",
@@ -338,6 +343,7 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#fff", fontWeight: "bold" },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  registerText: { marginTop: 10, textAlign: "center" },
+  registerText: { marginTop: 35, textAlign: "center" },
   registerhere: { color: "#007BFF", fontWeight: "bold" },
 });
+
