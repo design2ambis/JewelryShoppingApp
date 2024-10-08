@@ -23,7 +23,7 @@ export default function CartScreen({ navigation }) {
   const [isCartEmpty, setIsCartEmpty] = useState(false);
 
   const fetchCartData = async () => {
-    const token = await AsyncStorage.getItem("usertoken");
+    const token =  await AsyncStorage.getItem("usertoken");
 
     if (token && token!="") {
       setUsertoken(token);

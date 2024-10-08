@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ImageViewer from "react-native-image-zoom-viewer";
+import { showMessage } from "react-native-flash-message";
 
 const ProductDetailScreen = ({ route }) => {
   const { designNo } = route.params;
@@ -43,7 +44,11 @@ const ProductDetailScreen = ({ route }) => {
     const token = await AsyncStorage.getItem("usertoken"); // Retrieve user token
 
     if (!token) {
-      Alert.alert("Error", "User is not logged in.");
+      showMessage({
+        message: "Login to Add item in cart",
+        description: "failed",
+        type: "danger",
+      });
       return;
     }
 
@@ -64,11 +69,14 @@ const ProductDetailScreen = ({ route }) => {
         }),
       });
 
-
       const data = await response.json();
 
       if (data.status) {
-        Alert.alert("Success", data.message);
+        showMessage({
+          message: data.message,
+          description: "success",
+          type: data.type,
+        });
       } else {
         Alert.alert("Error", "Failed to add to cart.");
       }
@@ -79,7 +87,11 @@ const ProductDetailScreen = ({ route }) => {
   };
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
   return (
@@ -201,6 +213,12 @@ const styles = StyleSheet.create({
   closeButtonText: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff", // Optional: Add background color if needed
   },
 });
 

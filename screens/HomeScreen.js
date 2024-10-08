@@ -114,7 +114,12 @@ const HomeScreen = ({ navigation }) => {
         ]}
         onPress={() => handleSubcategoryPress(item.cat_name, item.sub_name)}
       >
-        <Text style={styles.categoryName}>
+        <Text
+          style={[
+            styles.categoryName,
+            isSelected ? styles.selectedText : styles.unselectedText,
+          ]}
+        >
           {item.cat_name} {item.sub_name}
         </Text>
       </TouchableOpacity>
@@ -147,7 +152,7 @@ const HomeScreen = ({ navigation }) => {
         >
           <Text style={styles.paginationText}>{"<<<"}</Text>
         </TouchableOpacity>
-        <Text style={styles.paginationText}>{currentPage}</Text>
+        <Text style={styles.currentPage}>{currentPage}</Text>
         <TouchableOpacity
           style={[
             styles.paginationButton,
@@ -248,15 +253,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   selectedCategorySubcategory: {
-    borderColor: "#ffb400",
-    borderWidth: 2,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#0078f0", // Black background for selected
   },
   categoryName: {
     textAlign: "center",
     fontWeight: "bold",
-    color: "#333",
     fontSize: 14,
+  },
+  selectedText: {
+    color: "#fff", // White text for selected
+  },
+  unselectedText: {
+    color: "#333", // Black text for unselected
   },
   productList: {
     marginTop: 20,
@@ -309,6 +317,10 @@ const styles = StyleSheet.create({
   },
   paginationText: {
     color: "#fff",
+    fontWeight: "bold",
+  },
+  currentPage: {
+    color: "#797d82",
     fontWeight: "bold",
   },
   noProductContainer: {

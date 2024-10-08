@@ -6,7 +6,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlashMessage from "react-native-flash-message"; // Import FlashMessage
-
+import { useWindowDimensions } from "react-native";
 import HomeScreen from "./screens/HomeScreen";
 import CartScreen from "./screens/CartScreen";
 import SearchScreen from "./screens/SearchScreen";
@@ -70,7 +70,7 @@ function BottomTabs() {
 }
 
 // Stack Navigator to include LoginScreen and ProductDetailScreen
-function MainStack({ setIsLoggedIn }) {
+function MainStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -106,12 +106,17 @@ function OrdersStack() {
 }
 
 function App() {
+  const dimensions = useWindowDimensions();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Function to check user token
   const checkUserToken = async () => {
     const token = await AsyncStorage.getItem("usertoken");
-    setIsLoggedIn(!!token); // Update login state
+    if (token && token != "") {
+      setIsLoggedIn(true); // Update login state
+    } else {
+      setIsLoggedIn(false); // Update login state
+    }
   };
 
   useEffect(() => {
@@ -119,13 +124,20 @@ function App() {
     checkUserToken();
   }, []);
 
+  const handleDrawerOpen = async () => {
+    await checkUserToken(); // Check user token every time drawer opens
+  };
+
   return (
     <>
       <NavigationContainer>
-        <Drawer.Navigator>
-          <Drawer.Screen name="Nivsjewels">
-            {() => <MainStack setIsLoggedIn={setIsLoggedIn} />}
-          </Drawer.Screen>
+        <Drawer.Navigator
+          screenOptions={{
+            drawerType: dimensions.width >= 768 ? "permanent" : "front",
+          }}
+          onDrawerOpen={handleDrawerOpen} // Trigger check on drawer open
+        >
+          <Drawer.Screen name="Nivsjewels" component={MainStack} />
           {isLoggedIn && ( // Conditionally show extra screens when logged in
             <>
               <Drawer.Screen
