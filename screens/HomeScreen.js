@@ -7,7 +7,11 @@ import {
   Image,
   ActivityIndicator,
   StyleSheet,
+  Alert,
 } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons"; // Import the icon
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import FlashMessage, { showMessage } from "react-native-flash-message";
 
 const HomeScreen = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
@@ -30,16 +34,12 @@ const HomeScreen = ({ navigation }) => {
         if (data.option.status === 200) {
           setCategories(data.data);
 
-          // Select a random category and subcategory
           const randomCategory =
             data.data[Math.floor(Math.random() * data.data.length)];
           const catName = randomCategory.cat_name;
           const subName = randomCategory.sub_name;
 
-          // Set the selected category and subcategory
           setSelectedCategorySubcategory({ catName, subName });
-
-          // Fetch products for the random category and subcategory
           fetchProducts(catName, subName, 1);
         }
         setLoading(false);
@@ -88,6 +88,54 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate("ProductDetails", { designNo });
   };
 
+  const handleAddCart = async (product) => {
+    const token = await AsyncStorage.getItem("usertoken");
+
+    // Ensure the token is valid
+    if (token && token !== "") {
+      // console.log(product);
+      try {
+        const response = await fetch("https://nivsjewels.com/api/update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json", // Set the content type to JSON
+          },
+          body: JSON.stringify({
+            add_cart: "",
+            pid: product.id,
+            qty: "1",
+            prono: product.no,
+            prowgt: product.weight,
+            proimg: product.image,
+            token: token, // User token from AsyncStorage
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.status) {
+          showMessage({
+            message: data.message,
+            description: "success",
+            type: data.type,
+          });
+        } else {
+          Alert.alert("Error", "Failed to add to cart.");
+        }
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        Alert.alert("Error", "An error occurred. Please try again.");
+      }
+    } else {
+      // Handle case where user is not logged in
+      showMessage({
+        message: "Login Required",
+        description: "To add this item to the cart, please log in.",
+        type: "danger",
+      });
+    }
+  };
+
   const loadProducts = (page) => {
     if (selectedCategorySubcategory) {
       const { catName, subName } = selectedCategorySubcategory;
@@ -134,6 +182,14 @@ const HomeScreen = ({ navigation }) => {
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <Text style={styles.productTitle}>{item.no}</Text>
       <Text style={styles.productDetail}>Weight: {item.weight}</Text>
+
+      {/* Add cart icon */}
+      <TouchableOpacity
+        style={styles.cartIcon}
+        onPress={() => handleAddCart(item)}
+      >
+        <Icon name="cart-outline" size={24} color="#333" />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
@@ -253,7 +309,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   selectedCategorySubcategory: {
-    backgroundColor: "#0078f0", // Black background for selected
+    backgroundColor: "#0078f0", // Background color for selected category
   },
   categoryName: {
     textAlign: "center",
@@ -261,10 +317,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   selectedText: {
-    color: "#fff", // White text for selected
+    color: "#fff", // White text for selected category
   },
   unselectedText: {
-    color: "#333", // Black text for unselected
+    color: "#333", // Black text for unselected category
   },
   productList: {
     marginTop: 20,
@@ -284,6 +340,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
+    position: "relative", // Needed to position the cart icon
   },
   productImage: {
     width: 120,
@@ -295,10 +352,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#444",
+    marginBottom: 4,
   },
   productDetail: {
     fontSize: 14,
     color: "#777",
+  },
+  cartIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#fff",
+    padding: 6,
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   paginationContainer: {
     flexDirection: "row",

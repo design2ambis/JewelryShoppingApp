@@ -15,6 +15,7 @@ import ProductDetailScreen from "./screens/ProductDetailScreen";
 import ChangePasswordScreen from "./screens/ChangePasswordScreen";
 import OrdersScreen from "./screens/OrdersScreen";
 import OrderDetailsScreen from "./screens/OrderDetailsScreen";
+import CheckoutScreen from "./screens/CheckoutScreen";
 
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
@@ -82,6 +83,11 @@ function MainStack() {
         name="ProductDetails"
         component={ProductDetailScreen}
         options={{ title: "Back to Category" }}
+      />
+      <Stack.Screen
+        name="Checkout"
+        component={CheckoutScreen}
+        options={{ title: "Back to Cart" }}
       />
     </Stack.Navigator>
   );

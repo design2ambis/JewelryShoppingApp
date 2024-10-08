@@ -19,19 +19,22 @@ const OrdersScreen = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem("usertoken");
       if (!token) {
-        console.error("Token not found");
-        return;
-      }
-
-      const response = await fetch(
-        `https://nivsjewels.com/api/select?get_order&token=${token}`
-      );
-      const result = await response.json();
-
-      if (result.status === 200) {
-        setOrders(result.data);
+        showMessage({
+          message: "Login Required",
+          description: "To view orders, please log in.",
+          type: "danger",
+        });
       } else {
-        // console.error("Failed to fetch orders");
+        const response = await fetch(
+          `https://nivsjewels.com/api/select?get_order&token=${token}`
+        );
+        const result = await response.json();
+
+        if (result.status === 200) {
+          setOrders(result.data);
+        } else {
+          // console.error("Failed to fetch orders");
+        }
       }
     } catch (error) {
       console.error("Error fetching orders:", error);

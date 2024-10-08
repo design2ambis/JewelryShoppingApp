@@ -99,6 +99,11 @@ export default function CartScreen({ navigation }) {
     );
   };
 
+  const handleCheckout = () => {
+    // Navigate to the checkout screen
+    navigation.navigate("Checkout"); // Replace with the actual name of your checkout screen
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -181,6 +186,11 @@ export default function CartScreen({ navigation }) {
         )}
         contentContainerStyle={styles.listContainer}
       />
+
+      {/* Proceed to Checkout Button */}
+      <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
+        <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -251,4 +261,16 @@ const styles = StyleSheet.create({
   },
   removeButtonText: { color: "#fff", fontSize: 14, marginLeft: 5 },
   listContainer: { paddingBottom: 16 },
+  checkoutButton: {
+    backgroundColor: "#17A6A8",
+    padding: 16,
+    borderRadius: 6,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  checkoutButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
 });
