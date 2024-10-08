@@ -23,9 +23,9 @@ export default function CartScreen({ navigation }) {
   const [isCartEmpty, setIsCartEmpty] = useState(false);
 
   const fetchCartData = async () => {
-    const token =  await AsyncStorage.getItem("usertoken");
+    const token = await AsyncStorage.getItem("usertoken");
 
-    if (token && token!="") {
+    if (token && token != "") {
       setUsertoken(token);
       try {
         const response = await fetch(
@@ -102,7 +102,7 @@ export default function CartScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#9b6f25" />
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
@@ -119,7 +119,7 @@ export default function CartScreen({ navigation }) {
         <Text style={styles.noTokenText}>You are not logged in</Text>
         <Button
           mode="contained"
-          onPress={() => navigation.navigate("ProfileTab")}
+          onPress={() => navigation.replace("ProfileTab")}
           style={styles.loginButton}
           labelStyle={styles.buttonLabel}
         >

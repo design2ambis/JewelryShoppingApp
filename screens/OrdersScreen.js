@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  Image, // Import Image
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -30,7 +31,7 @@ const OrdersScreen = ({ navigation }) => {
       if (result.status === 200) {
         setOrders(result.data);
       } else {
-        console.error("Failed to fetch orders");
+        // console.error("Failed to fetch orders");
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -69,11 +70,24 @@ const OrdersScreen = ({ navigation }) => {
     );
   }
 
+  if (orders.length === 0) {
+    // Check if there are no orders
+    return (
+      <View style={styles.emptyContainer}>
+        <Image
+          source={require("../assets/images/no-orders.png")} // Update the path to your image
+          style={styles.emptyImage}
+        />
+        <Text style={styles.emptyText}>No Orders</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
         data={orders}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()} // Ensure the keyExtractor is a string
         renderItem={renderOrder}
         ListEmptyComponent={<Text>No orders available.</Text>}
       />
@@ -127,6 +141,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyImage: {
+    width: 100, // Set your desired width
+    height: 100, // Set your desired height
+    marginBottom: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
   },
 });
 
