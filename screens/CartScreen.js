@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   removeButtonText: { color: "#fff", fontSize: 14, marginLeft: 5 },
   listContainer: { paddingBottom: 16 },
   checkoutButton: {
-    backgroundColor: "#17A6A8",
+    backgroundColor: "#6200ea",
     padding: 16,
     borderRadius: 6,
     alignItems: "center",

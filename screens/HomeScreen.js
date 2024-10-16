@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react"; // Import useRef
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ const HomeScreen = ({ navigation }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreProducts, setHasMoreProducts] = useState(true);
   const [noProductImage, setNoProductImage] = useState(false);
+  const categoryListRef = useRef(null); // Create a ref for the FlatList
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -32,14 +33,12 @@ const HomeScreen = ({ navigation }) => {
         );
         const data = await response.json();
         if (data.option.status === 200) {
-          // Shuffle categories
-          const shuffledCategories = data.data.sort(() => Math.random() - 0.5);
-          setCategories(shuffledCategories);
+          setCategories(data.data);
 
-          // Select the first category after shuffling
-          const firstCategory = shuffledCategories[0];
-          const catName = firstCategory.cat_name;
-          const subName = firstCategory.sub_name;
+          // Select a random category and subcategory
+          const randomCategory = data.data[0];
+          const catName = randomCategory.cat_name;
+          const subName = randomCategory.sub_name;
 
           setSelectedCategorySubcategory({ catName, subName });
           fetchProducts(catName, subName, 1);
@@ -53,6 +52,20 @@ const HomeScreen = ({ navigation }) => {
 
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    // Scroll to the selected category when it changes or on initial render
+    if (selectedCategorySubcategory && categories.length > 0) {
+      const index = categories.findIndex(
+        (cat) =>
+          cat.cat_name === selectedCategorySubcategory.catName &&
+          cat.sub_name === selectedCategorySubcategory.subName
+      );
+      // if (index >= 0 && categoryListRef.current) {
+      //   categoryListRef.current.scrollToIndex({ index, animated: true });
+      // }
+    }
+  }, [selectedCategorySubcategory, categories]);
 
   const fetchProducts = async (cat, subcat, page = 1) => {
     if (loadingProducts) return;
@@ -93,12 +106,13 @@ const HomeScreen = ({ navigation }) => {
   const handleAddCart = async (product) => {
     const token = await AsyncStorage.getItem("usertoken");
 
+    // Ensure the token is valid
     if (token && token !== "") {
       try {
         const response = await fetch("https://nivsjewels.com/api/update", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json", // Set the content type to JSON
           },
           body: JSON.stringify({
             add_cart: "",
@@ -107,7 +121,7 @@ const HomeScreen = ({ navigation }) => {
             prono: product.no,
             prowgt: product.weight,
             proimg: product.image,
-            token: token,
+            token: token, // User token from AsyncStorage
           }),
         });
 
@@ -127,6 +141,7 @@ const HomeScreen = ({ navigation }) => {
         Alert.alert("Error", "An error occurred. Please try again.");
       }
     } else {
+      // Handle case where user is not logged in
       showMessage({
         message: "Login Required",
         description: "To add this item to the cart, please log in.",
@@ -181,6 +196,8 @@ const HomeScreen = ({ navigation }) => {
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <Text style={styles.productTitle}>{item.no}</Text>
       <Text style={styles.productDetail}>Weight: {item.weight}</Text>
+
+      {/* Add cart icon */}
       <TouchableOpacity
         style={styles.cartIcon}
         onPress={() => handleAddCart(item)}
@@ -201,7 +218,6 @@ const HomeScreen = ({ navigation }) => {
           onPress={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
         >
-          {/* <Text style={styles.paginationText}>{"<<<"}</Text> */}
           <Image
             source={require("../assets/images/previous.png")}
             style={{ width: 25, height: 25 }}
@@ -216,7 +232,6 @@ const HomeScreen = ({ navigation }) => {
           onPress={() => handlePageChange(currentPage + 1)}
           disabled={!hasMoreProducts}
         >
-          {/* <Text style={styles.paginationText}>{">>>"}</Text> */}
           <Image
             source={require("../assets/images/next.png")}
             style={{ width: 25, height: 25 }}
@@ -228,14 +243,16 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {loading || loadingProducts ? (
+      {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
         </View>
       ) : (
         <>
+          {/* Category List */}
           <View style={styles.categoryContainer}>
             <FlatList
+              ref={categoryListRef} // Assign the ref to FlatList
               data={categories}
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderCategoryItem}
@@ -244,6 +261,14 @@ const HomeScreen = ({ navigation }) => {
             />
           </View>
 
+          {/* Loading Products Indicator */}
+          {loadingProducts && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+          )}
+
+          {/* No Products Found Image */}
           {noProductImage ? (
             <View style={styles.noProductContainer}>
               <Image
@@ -254,6 +279,7 @@ const HomeScreen = ({ navigation }) => {
               />
             </View>
           ) : (
+            /* Render Product List */
             <FlatList
               data={products}
               keyExtractor={(item) => item.id.toString()}
@@ -263,6 +289,7 @@ const HomeScreen = ({ navigation }) => {
             />
           )}
 
+          {/* Always show pagination */}
           <Pagination
             currentPage={currentPage}
             onPageChange={handlePageChange}
@@ -282,8 +309,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // Center vertically
+    alignItems: "center", // Center horizontally
   },
   categoryContainer: {
     justifyContent: "center",
@@ -376,7 +403,7 @@ const styles = StyleSheet.create({
   paginationButton: {
     padding: 10,
     backgroundColor: "#007bff",
-    borderRadius: 50,
+    borderRadius: 5,
   },
   disabledButton: {
     backgroundColor: "#ccc",
