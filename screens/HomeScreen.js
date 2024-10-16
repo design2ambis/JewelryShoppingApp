@@ -32,12 +32,14 @@ const HomeScreen = ({ navigation }) => {
         );
         const data = await response.json();
         if (data.option.status === 200) {
-          setCategories(data.data);
+          // Shuffle categories
+          const shuffledCategories = data.data.sort(() => Math.random() - 0.5);
+          setCategories(shuffledCategories);
 
-          const randomCategory =
-            data.data[Math.floor(Math.random() * data.data.length)];
-          const catName = randomCategory.cat_name;
-          const subName = randomCategory.sub_name;
+          // Select the first category after shuffling
+          const firstCategory = shuffledCategories[0];
+          const catName = firstCategory.cat_name;
+          const subName = firstCategory.sub_name;
 
           setSelectedCategorySubcategory({ catName, subName });
           fetchProducts(catName, subName, 1);
@@ -91,13 +93,12 @@ const HomeScreen = ({ navigation }) => {
   const handleAddCart = async (product) => {
     const token = await AsyncStorage.getItem("usertoken");
 
-    // Ensure the token is valid
     if (token && token !== "") {
       try {
         const response = await fetch("https://nivsjewels.com/api/update", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json", // Set the content type to JSON
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             add_cart: "",
@@ -106,7 +107,7 @@ const HomeScreen = ({ navigation }) => {
             prono: product.no,
             prowgt: product.weight,
             proimg: product.image,
-            token: token, // User token from AsyncStorage
+            token: token,
           }),
         });
 
@@ -126,7 +127,6 @@ const HomeScreen = ({ navigation }) => {
         Alert.alert("Error", "An error occurred. Please try again.");
       }
     } else {
-      // Handle case where user is not logged in
       showMessage({
         message: "Login Required",
         description: "To add this item to the cart, please log in.",
@@ -181,8 +181,6 @@ const HomeScreen = ({ navigation }) => {
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <Text style={styles.productTitle}>{item.no}</Text>
       <Text style={styles.productDetail}>Weight: {item.weight}</Text>
-
-      {/* Add cart icon */}
       <TouchableOpacity
         style={styles.cartIcon}
         onPress={() => handleAddCart(item)}
@@ -203,7 +201,11 @@ const HomeScreen = ({ navigation }) => {
           onPress={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
         >
-          <Text style={styles.paginationText}>{"<<<"}</Text>
+          {/* <Text style={styles.paginationText}>{"<<<"}</Text> */}
+          <Image
+            source={require("../assets/images/previous.png")}
+            style={{ width: 25, height: 25 }}
+          />
         </TouchableOpacity>
         <Text style={styles.currentPage}>{currentPage}</Text>
         <TouchableOpacity
@@ -214,7 +216,11 @@ const HomeScreen = ({ navigation }) => {
           onPress={() => handlePageChange(currentPage + 1)}
           disabled={!hasMoreProducts}
         >
-          <Text style={styles.paginationText}>{">>>"}</Text>
+          {/* <Text style={styles.paginationText}>{">>>"}</Text> */}
+          <Image
+            source={require("../assets/images/next.png")}
+            style={{ width: 25, height: 25 }}
+          />
         </TouchableOpacity>
       </View>
     );
@@ -222,13 +228,12 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {loading ? (
+      {loading || loadingProducts ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0000ff" />
         </View>
       ) : (
         <>
-          {/* Category List */}
           <View style={styles.categoryContainer}>
             <FlatList
               data={categories}
@@ -239,14 +244,6 @@ const HomeScreen = ({ navigation }) => {
             />
           </View>
 
-          {/* Loading Products Indicator */}
-          {loadingProducts && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#0000ff" />
-            </View>
-          )}
-
-          {/* No Products Found Image */}
           {noProductImage ? (
             <View style={styles.noProductContainer}>
               <Image
@@ -257,7 +254,6 @@ const HomeScreen = ({ navigation }) => {
               />
             </View>
           ) : (
-            /* Render Product List */
             <FlatList
               data={products}
               keyExtractor={(item) => item.id.toString()}
@@ -267,7 +263,6 @@ const HomeScreen = ({ navigation }) => {
             />
           )}
 
-          {/* Always show pagination */}
           <Pagination
             currentPage={currentPage}
             onPageChange={handlePageChange}
@@ -381,7 +376,7 @@ const styles = StyleSheet.create({
   paginationButton: {
     padding: 10,
     backgroundColor: "#007bff",
-    borderRadius: 5,
+    borderRadius: 50,
   },
   disabledButton: {
     backgroundColor: "#ccc",
