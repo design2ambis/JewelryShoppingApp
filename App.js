@@ -41,9 +41,9 @@ function BottomTabs() {
 
           return <MaterialIcons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: "#000",
+        tabBarActiveTintColor: "#1b70f7",
         tabBarInactiveTintColor: "#8c8a88",
-        tabBarStyle: { display: "flex" },
+        tabBarStyle: { display: "flex"},
       })}
     >
       <Tab.Screen

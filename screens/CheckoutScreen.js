@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   TextInput,
   Alert,
+  ScrollView, // Import ScrollView
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -153,64 +154,69 @@ export default function CheckoutScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.totalContainer}>
-        <Text style={styles.totalText}>Total Items: {totalItems}</Text>
-        <Text style={styles.totalText}>
-          Total Weight: {totalWeight.toFixed(2)} g
-        </Text>
-        <Text style={styles.totalText}>Total Quantity: {totalQuantity}</Text>
-      </View>
+      <ScrollView // Wrap everything in ScrollView
+        contentContainerStyle={styles.scrollContainer} // Optional: for better styling
+        keyboardShouldPersistTaps="handled" // This will allow taps on the ScrollView while the keyboard is up
+      >
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalText}>Total Items: {totalItems}</Text>
+          <Text style={styles.totalText}>
+            Total Weight: {totalWeight.toFixed(2)} g
+          </Text>
+          <Text style={styles.totalText}>Total Quantity: {totalQuantity}</Text>
+        </View>
 
-      <TextInput
-        placeholder="First Name"
-        value={firstName}
-        onChangeText={setFirstName}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Last Name"
-        value={lastName}
-        onChangeText={setLastName}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Phone"
-        value={phone}
-        onChangeText={setPhone}
-        style={styles.input}
-        keyboardType="phone-pad"
-      />
-      <TextInput
-        placeholder="Address"
-        multiline={true}
-        numberOfLines={4}
-        value={address}
-        onChangeText={setAddress}
-        style={styles.inputAddress}
-      />
-      <TextInput
-        placeholder="City"
-        value={townCity}
-        onChangeText={setCity}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Country"
-        value={stateCountry}
-        onChangeText={setCountry}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="ZIP Code"
-        value={zipcode}
-        onChangeText={setZip}
-        style={styles.input}
-        keyboardType="numeric"
-      />
+        <TextInput
+          placeholder="First Name"
+          value={firstName}
+          onChangeText={setFirstName}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Last Name"
+          value={lastName}
+          onChangeText={setLastName}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Phone"
+          value={phone}
+          onChangeText={setPhone}
+          style={styles.input}
+          keyboardType="phone-pad"
+        />
+        <TextInput
+          placeholder="Address"
+          multiline={true}
+          numberOfLines={4}
+          value={address}
+          onChangeText={setAddress}
+          style={styles.inputAddress}
+        />
+        <TextInput
+          placeholder="City"
+          value={townCity}
+          onChangeText={setCity}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Country"
+          value={stateCountry}
+          onChangeText={setCountry}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="ZIP Code"
+          value={zipcode}
+          onChangeText={setZip}
+          style={styles.input}
+          keyboardType="numeric"
+        />
 
-      <TouchableOpacity style={styles.ckbutton} onPress={handleCheckout}>
-        <Text style={styles.ckbuttonText}>Place Order</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.ckbutton} onPress={handleCheckout}>
+          <Text style={styles.ckbuttonText}>Place Order</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -225,6 +231,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  scrollContainer: {
+    paddingBottom: 20, // Add some padding to the bottom for better UX
   },
   totalContainer: {
     marginVertical: 10,

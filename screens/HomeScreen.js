@@ -93,7 +93,6 @@ const HomeScreen = ({ navigation }) => {
 
     // Ensure the token is valid
     if (token && token !== "") {
-      // console.log(product);
       try {
         const response = await fetch("https://nivsjewels.com/api/update", {
           method: "POST",
@@ -194,8 +193,6 @@ const HomeScreen = ({ navigation }) => {
   );
 
   const Pagination = ({ currentPage, onPageChange, hasMoreProducts }) => {
-    if (products.length === 0) return null;
-
     return (
       <View style={styles.paginationContainer}>
         <TouchableOpacity
@@ -231,6 +228,7 @@ const HomeScreen = ({ navigation }) => {
         </View>
       ) : (
         <>
+          {/* Category List */}
           <View style={styles.categoryContainer}>
             <FlatList
               data={categories}
@@ -241,13 +239,15 @@ const HomeScreen = ({ navigation }) => {
             />
           </View>
 
+          {/* Loading Products Indicator */}
           {loadingProducts && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#0000ff" />
             </View>
           )}
 
-          {noProductImage && (
+          {/* No Products Found Image */}
+          {noProductImage ? (
             <View style={styles.noProductContainer}>
               <Image
                 source={{
@@ -256,9 +256,8 @@ const HomeScreen = ({ navigation }) => {
                 style={styles.noProductImage}
               />
             </View>
-          )}
-
-          {!noProductImage && products.length > 0 && !loadingProducts && (
+          ) : (
+            /* Render Product List */
             <FlatList
               data={products}
               keyExtractor={(item) => item.id.toString()}
@@ -268,6 +267,7 @@ const HomeScreen = ({ navigation }) => {
             />
           )}
 
+          {/* Always show pagination */}
           <Pagination
             currentPage={currentPage}
             onPageChange={handlePageChange}

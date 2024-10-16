@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DevSettings } from "react-native";
 import {
   View,
   Text,
@@ -100,6 +101,7 @@ export default function ProfileScreen({ navigation }) {
         });
 
         fetchUserData();
+        DevSettings.reload();
       } else {
         showMessage({
           message: data.msg || "Login failed",
@@ -191,6 +193,7 @@ export default function ProfileScreen({ navigation }) {
         description: "You have been logged out.",
         type: "success",
       });
+      DevSettings.reload();
     } catch (error) {
       showMessage({
         message: "Logout Error",
