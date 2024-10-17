@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import FlashMessage from "react-native-flash-message"; // Import FlashMessage
 import { useWindowDimensions } from "react-native";
 import HomeScreen from "./screens/HomeScreen";
+import CoinScreen from "./screens/CoinScreen";
 import CartScreen from "./screens/CartScreen";
 import SearchScreen from "./screens/SearchScreen";
 import ProfileScreen from "./screens/ProfileScreen";
@@ -37,6 +38,8 @@ function BottomTabs() {
             iconName = "search";
           } else if (route.name === "ProfileTab") {
             iconName = "person";
+          } else if (route.name === "CoinTab") {
+            iconName = "savings";
           }
 
           return <MaterialIcons name={iconName} size={size} color={color} />;
@@ -50,6 +53,11 @@ function BottomTabs() {
         name="HomeTab"
         component={HomeScreen}
         options={{ title: "Home" }}
+      />
+      <Tab.Screen
+        name="CoinTab"
+        component={CoinScreen}
+        options={{ title: "Coins" }}
       />
       <Tab.Screen
         name="CartTab"
