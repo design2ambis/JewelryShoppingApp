@@ -24,9 +24,12 @@ export default function ProfileScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [usertoken, setUsertoken] = useState(null);
   const [isLoginForm, setIsLoginForm] = useState(true);
+  const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [validatetype, Setvalidatetype] = useState("otp");
 
   const fetchUserData = async () => {
     const token = await AsyncStorage.getItem("usertoken");
@@ -121,7 +124,7 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!fullname || !phone || !email || !password || !confirmPassword) {
       showMessage({
         message: "Input Error",
         description: "Please fill in all fields.",
@@ -129,7 +132,7 @@ export default function ProfileScreen({ navigation }) {
       });
       return;
     }
-
+  
     if (password !== confirmPassword) {
       showMessage({
         message: "Password Mismatch",
@@ -138,7 +141,7 @@ export default function ProfileScreen({ navigation }) {
       });
       return;
     }
-
+  
     setLoading(true);
     try {
       const response = await fetch("https://nivsjewels.com/api/register", {
@@ -146,23 +149,31 @@ export default function ProfileScreen({ navigation }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          fullname: fullname,
+          email: email,
+          phone: phone,
+          password: password,
+          confirmPassword: confirmPassword,
+          mode: validatetype,
+        }),
       });
-
+  
       const data = await response.json();
-
+  
       if (data.status === true) {
         showMessage({
-          message: "Registration Successful",
-          description: "You can now login.",
+          message: data.message,
+          description: "OTP sent! Please verify it.",
           type: "success",
         });
-
-        setIsLoginForm(true);
+        
+        // Navigate to OTP screen, passing the email and other relevant data as parameters
+        navigation.navigate("OtpScreen", { email: email });
       } else {
         showMessage({
-          message: data.msg || "Registration failed",
-          description: data.text || "An unknown error occurred.",
+          message: "Registration failed",
+          description: data.message || "An unknown error occurred.",
           type: "danger",
         });
       }
@@ -176,6 +187,8 @@ export default function ProfileScreen({ navigation }) {
       setLoading(false);
     }
   };
+  
+  
 
   const handleLogout = async () => {
     try {
@@ -258,12 +271,28 @@ export default function ProfileScreen({ navigation }) {
             <View>
               <Text style={styles.title}>Register</Text>
               <TextInput
+                placeholder="Fullname"
+                value={fullname}
+                onChangeText={(text) => setFullname(text)}
+                style={styles.input}
+                autoComplete="name"
+                keyboardType="text"
+              />
+              <TextInput
                 placeholder="Email"
                 value={email}
                 onChangeText={(text) => setEmail(text)}
                 style={styles.input}
                 autoComplete="email"
                 keyboardType="email-address"
+              />
+              <TextInput
+                placeholder="Phone"
+                value={phone}
+                onChangeText={(text) => setPhone(text)}
+                style={styles.input}
+                autoComplete="phone"
+                keyboardType="phone-pad"
               />
               <TextInput
                 placeholder="Password"
@@ -319,10 +348,10 @@ export default function ProfileScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
-  container: { 
-    flex: 1, 
-    padding: 20, 
-    backgroundColor: "#f0f2f5", 
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#f0f2f5",
     justifyContent: "center" // Center content vertically
   },
   logo: { width: 80, height: 80, alignSelf: "center", marginBottom: 30 },

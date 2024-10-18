@@ -17,6 +17,7 @@ import ChangePasswordScreen from "./screens/ChangePasswordScreen";
 import OrdersScreen from "./screens/OrdersScreen";
 import OrderDetailsScreen from "./screens/OrderDetailsScreen";
 import CheckoutScreen from "./screens/CheckoutScreen";
+import OtpScreen from "./screens/OtpScreen";
 
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator();
@@ -96,6 +97,11 @@ function MainStack() {
         name="Checkout"
         component={CheckoutScreen}
         options={{ title: "Back to Cart" }}
+      />
+      <Stack.Screen
+        name="OtpScreen"
+        component={OtpScreen}
+        options={{ title: "Enter OTP" }} // Added OTP Screen here
       />
     </Stack.Navigator>
   );
