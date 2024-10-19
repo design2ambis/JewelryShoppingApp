@@ -233,7 +233,7 @@ export default function ProfileScreen({ route, navigation }) {
       <LinearGradient colors={["#f2e6d7", "#d9b98a"]} style={styles.gradient}>
         <View style={styles.container}>
           <Image
-            source={{ uri: "https://nivsjewels.com/assets/images/logo.png" }}
+            source={require('../assets/images/logo.png')}
             style={styles.logo}
           />
           {isLoginForm ? (
