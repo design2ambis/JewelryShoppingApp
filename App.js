@@ -146,6 +146,7 @@ function App() {
 
   const handleDrawerOpen = async () => {
     await checkUserToken(); // Check user token every time drawer opens
+    
   };
 
   return (

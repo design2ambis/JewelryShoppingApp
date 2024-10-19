@@ -69,17 +69,6 @@ const OtpScreen = ({ route, navigation }) => {
 
         navigation.navigate("ProfileTab", { token: data.usertoken });
 
-        // Option 1: Reset navigation stack to HomeTab
-        // navigation.dispatch(
-        //   CommonActions.reset({
-        //     index: 0,
-        //     routes: [{ name: "HomeTab" }], // Assuming HomeTab is your main screen
-        //   })
-        // );
-
-        // Option 2 (optional): Restart the entire app for a fresh start
-        // RNRestart.Restart(); // Uncomment this if you want to restart the app completely
-
       } else {
         showMessage({
           message: "Failed",
@@ -98,10 +87,44 @@ const OtpScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleResendOtp = () => {
-    // Logic to resend OTP
-    console.log("Resending OTP to", email);
-    // Add your resend OTP logic here
+  const handleResendOtp = async() => {
+    try {
+      const res = await fetch("https://nivsjewels.com/api/register", { // Replace with your API endpoint
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+           // Resend the email along with OTP
+          resendotp: true,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.status === true) {
+        showMessage({
+          message: "Otp Resent",
+          description: data.message,
+          type: "success",
+        });     
+
+      } else {
+        showMessage({
+          message: "Failed",
+          description: data.message,
+          type: "error",
+        });
+      }
+    } catch (error) {
+      showMessage({
+        message: "Failed",
+        description: "Network error. Please try again later.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
