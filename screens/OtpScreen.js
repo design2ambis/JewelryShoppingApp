@@ -1,7 +1,11 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showMessage } from "react-native-flash-message";
+import { CommonActions } from '@react-navigation/native'; // Import to reset navigation stack
+// import RNRestart from 'react-native-restart'; // Import restart function (optional)
 
-const OtpScreen = ({ route }) => {
+const OtpScreen = ({ route, navigation }) => {
   const { email } = route.params; // Extract the email passed from the registration screen
   const [otp, setOtp] = useState(["", "", "", "", "", ""]); // State for individual OTP digits
   const [loading, setLoading] = useState(false);
@@ -44,23 +48,51 @@ const OtpScreen = ({ route }) => {
         body: JSON.stringify({
           verifyemail: email, // Send the email along with OTP
           otp: otpString,
-
         }),
       });
 
       const data = await response.json();
 
-      if (data.status===true) {
-        // OTP verified successfully
-        Alert.alert("Success", data.message);
-        // Navigate to the next screen or perform any other action
+      if (data.status === true) {
+        // Save user data in AsyncStorage
+        await AsyncStorage.setItem("userid", data.userid);
+        await AsyncStorage.setItem("username", data.username);
+        await AsyncStorage.setItem("useremail", data.useremail);
+        await AsyncStorage.setItem("userphone", data.userphone);
+        await AsyncStorage.setItem("usertoken", data.usertoken);
+
+        showMessage({
+          message: data.message,
+          description: `Welcome ${data.username}`,
+          type: "success",
+        });
+
+        navigation.navigate("ProfileTab", { token: data.usertoken });
+
+        // Option 1: Reset navigation stack to HomeTab
+        // navigation.dispatch(
+        //   CommonActions.reset({
+        //     index: 0,
+        //     routes: [{ name: "HomeTab" }], // Assuming HomeTab is your main screen
+        //   })
+        // );
+
+        // Option 2 (optional): Restart the entire app for a fresh start
+        // RNRestart.Restart(); // Uncomment this if you want to restart the app completely
+
       } else {
-        // Handle error response
-        Alert.alert("Error", data.message);
+        showMessage({
+          message: "Failed",
+          description: data.message,
+          type: "error",
+        });
       }
     } catch (error) {
-      // Handle network error
-      Alert.alert("Error", "Network error. Please try again later.");
+      showMessage({
+        message: "Failed",
+        description: "Network error. Please try again later.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }

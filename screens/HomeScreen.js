@@ -272,9 +272,7 @@ const HomeScreen = ({ navigation }) => {
           {noProductImage ? (
             <View style={styles.noProductContainer}>
               <Image
-                source={{
-                  uri: "https://notebookstore.in/image/no-product-found.png",
-                }}
+                source={require('../assets/images/no-product-found.png')}
                 style={styles.noProductImage}
               />
             </View>

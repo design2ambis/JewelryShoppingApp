@@ -116,9 +116,7 @@ export default function CartScreen({ navigation }) {
     return (
       <View style={styles.noTokenContainer}>
         <Image
-          source={{
-            uri: "https://cdn-icons-png.flaticon.com/512/5087/5087579.png",
-          }}
+          source={require('../assets/images/5087579.png')}
           style={styles.noTokenImage}
         />
         <Text style={styles.noTokenText}>You are not logged in</Text>
@@ -138,9 +136,7 @@ export default function CartScreen({ navigation }) {
     return (
       <View style={styles.emptyCartContainer}>
         <Image
-          source={{
-            uri: "https://cdn-icons-png.flaticon.com/512/11329/11329060.png",
-          }}
+          source={require('../assets/images/emptycart.png')}
           style={styles.emptyCartImage}
         />
         <Text style={styles.emptyCartText}>Your Cart is Empty</Text>

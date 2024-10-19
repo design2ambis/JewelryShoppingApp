@@ -13,9 +13,10 @@ import {
 } from "react-native";
 import { showMessage } from "react-native-flash-message";
 import { LinearGradient } from "expo-linear-gradient";
-import FlashMessage from "react-native-flash-message";
 
-export default function ProfileScreen({ navigation }) {
+export default function ProfileScreen({ route, navigation }) {
+  
+  const { token: routeToken } = route?.params || AsyncStorage.getItem("usertoken");
   const [userData, setUserData] = useState({
     username: "",
     email: "",
@@ -29,14 +30,15 @@ export default function ProfileScreen({ navigation }) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [validatetype, Setvalidatetype] = useState("otp");
+  const [validatetype, setValidatetype] = useState("otp");
 
   const fetchUserData = async () => {
-    const token = await AsyncStorage.getItem("usertoken");
-    setUsertoken(token);
+    try {
+      const storedToken = await AsyncStorage.getItem("usertoken");
+      const tokenToUse = routeToken || storedToken;
+      setUsertoken(tokenToUse);
 
-    if (token) {
-      try {
+      if (tokenToUse) {
         const storedUsername = await AsyncStorage.getItem("username");
         const storedEmail = await AsyncStorage.getItem("useremail");
         const storedPhone = await AsyncStorage.getItem("userphone");
@@ -46,23 +48,21 @@ export default function ProfileScreen({ navigation }) {
           email: storedEmail || "N/A",
           phone: storedPhone || "N/A",
         });
-      } catch (err) {
-        showMessage({
-          message: "Error",
-          description: "Failed to load user data.",
-          type: "danger",
-        });
-      } finally {
-        setLoading(false);
       }
-    } else {
+    } catch (err) {
+      showMessage({
+        message: "Error",
+        description: "Failed to load user data.",
+        type: "danger",
+      });
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [routeToken]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -103,8 +103,14 @@ export default function ProfileScreen({ navigation }) {
           type: "success",
         });
 
-        fetchUserData();
-        DevSettings.reload();
+        setUsertoken(data.usertoken);
+        setUserData({
+          username: data.username,
+          email: data.useremail,
+          phone: data.userphone
+        });
+
+        // DevSettings.reload();
       } else {
         showMessage({
           message: data.msg || "Login failed",
@@ -132,7 +138,7 @@ export default function ProfileScreen({ navigation }) {
       });
       return;
     }
-  
+
     if (password !== confirmPassword) {
       showMessage({
         message: "Password Mismatch",
@@ -141,7 +147,7 @@ export default function ProfileScreen({ navigation }) {
       });
       return;
     }
-  
+
     setLoading(true);
     try {
       const response = await fetch("https://nivsjewels.com/api/register", {
@@ -158,17 +164,17 @@ export default function ProfileScreen({ navigation }) {
           mode: validatetype,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (data.status === true) {
         showMessage({
-          message: data.message,
-          description: "OTP sent! Please verify it.",
+          message: "Verify it",
+          description: data.message,
           type: "success",
         });
-        
-        // Navigate to OTP screen, passing the email and other relevant data as parameters
+
+        // Navigate to OTP screen with the email and other data
         navigation.navigate("OtpScreen", { email: email });
       } else {
         showMessage({
@@ -187,8 +193,6 @@ export default function ProfileScreen({ navigation }) {
       setLoading(false);
     }
   };
-  
-  
 
   const handleLogout = async () => {
     try {
@@ -206,7 +210,7 @@ export default function ProfileScreen({ navigation }) {
         description: "You have been logged out.",
         type: "success",
       });
-      DevSettings.reload();
+      // DevSettings.reload();
     } catch (error) {
       showMessage({
         message: "Logout Error",
@@ -341,7 +345,6 @@ export default function ProfileScreen({ navigation }) {
       <TouchableOpacity style={styles.button} onPress={handleLogout}>
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
-      <FlashMessage position="bottom" />
     </View>
   );
 }
@@ -352,10 +355,15 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#f0f2f5",
-    justifyContent: "center" // Center content vertically
+    justifyContent: "center", // Center content vertically
   },
   logo: { width: 80, height: 80, alignSelf: "center", marginBottom: 30 },
-  title: { fontSize: 28, marginBottom: 20, color: "#636664", textAlign: "center" },
+  title: {
+    fontSize: 28,
+    marginBottom: 20,
+    color: "#636664",
+    textAlign: "center",
+  },
   input: {
     height: 50,
     borderColor: "#ccc",
@@ -378,4 +386,3 @@ const styles = StyleSheet.create({
   registerText: { marginTop: 35, textAlign: "center" },
   registerhere: { color: "#007BFF", fontWeight: "bold" },
 });
-
